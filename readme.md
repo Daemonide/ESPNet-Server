@@ -2,6 +2,8 @@
 
 UDP-based server for managing ESP32 laser tag devices. Built in Rust with Axum for HTTP/WebSocket and Tokio for async UDP networking.
 
+For the client use [ESPNet Client](https://github.com/Daemonide/ESPNet-Client)
+
 For the frontend use [ESPNet Server Frontend](https://github.com/Daemonide/ESPNet-Server-Frontend)
 
 ## What is this?

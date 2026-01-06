@@ -1,1 +1,32 @@
-{"A0:B7:65:28:24:F4":{"mac":"A0:B7:65:28:24:F4","ip":"192.168.1.124","last_seen":1767022323,"is_online":false,"identifier":"D"},"F4:2D:C9:59:7B:A4":{"mac":"F4:2D:C9:59:7B:A4","ip":"192.168.1.130","last_seen":1766758841,"is_online":false,"identifier":"A"}}
+{
+  "B0:CB:D8:D7:20:58": {
+    "mac": "B0:CB:D8:D7:20:58",
+    "ip": "10.150.182.162",
+    "last_seen": 1767721789,
+    "is_online": true,
+    "identifier": "H",
+    "team": "red",
+    "tagged_out": false,
+    "first_seen": 1767719999
+  },
+  "F4:2D:C9:59:7B:A4": {
+    "mac": "F4:2D:C9:59:7B:A4",
+    "ip": "10.150.182.98",
+    "last_seen": 1767721789,
+    "is_online": true,
+    "identifier": "B",
+    "team": "red",
+    "tagged_out": true,
+    "first_seen": 1767719391
+  },
+  "A0:B7:65:28:24:F4": {
+    "mac": "A0:B7:65:28:24:F4",
+    "ip": "10.150.182.252",
+    "last_seen": 1767721788,
+    "is_online": true,
+    "identifier": "A",
+    "team": "blue",
+    "tagged_out": false,
+    "first_seen": 1767718365
+  }
+}

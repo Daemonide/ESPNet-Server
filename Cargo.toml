@@ -1,19 +1,13 @@
 [package]
 name = "ESP-Wifi-Server"
 version = "0.1.0"
-edition = "2024"
+edition = "2021"
 
 [dependencies]
-# We need 'full' for the multi-thread runtime and 'ws' for WebSockets
-axum = { version = "0.8.1", features = ["ws"] }
-tokio = { version = "1.40", features = ["full"] }
-# We need 'derive' for the #[derive(Serialize)] macro
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
-chrono = { version = "0.4", features = ["serde"] }
-# We need 'sink' to send data over WebSockets
-futures-util = { version = "0.3", features = ["sink"] }
-# We need 'cors' to allow the React frontend to connect
-tower-http = { version = "0.6", features = ["cors"] }
-axum-macros = "0.5.0"
-if-addrs = "0.14.0"
+axum = { version = "0.7.5", features = ["ws"] }
+tokio = { version = "1.37.0", features = ["full", "time"] }
+serde = { version = "1.0.197", features = ["derive"] }
+serde_json = "1.0.116"
+chrono = { version = "0.4.35", features = ["serde"] }
+futures-util = "0.3.30"
+tower-http = { version = "0.5.2", features = ["cors"] }

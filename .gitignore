@@ -1,2 +1,5 @@
-/target
-persistence.json
+node_modules/
+dist/
+data/
+.env
+*.log

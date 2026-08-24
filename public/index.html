@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>RoboSoccer — Referee Console</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <h1>RoboSoccer Referee Console</h1>
+    <div id="conn-status" class="pill offline">connecting…</div>
+  </header>
+
+  <main>
+    <section class="scoreboard">
+      <div class="team red">
+        <div class="name" id="red-name">Red</div>
+        <div class="score" id="red-score">0</div>
+        <button data-team="red" class="goal-btn">+1 Goal</button>
+      </div>
+
+      <div class="clock-block">
+        <div class="clock" id="clock">15:00</div>
+        <div id="intense-badge" class="badge hidden">INTENSE</div>
+        <div class="controls">
+          <button id="start-btn">Start</button>
+          <button id="pause-btn">Pause</button>
+          <button id="resume-btn">Resume</button>
+          <button id="reset-btn">Reset</button>
+          <button id="minus1-btn">−1M</button>
+          <button id="plus1-btn">+1M</button>
+          <button id="undo-btn">Undo Goal</button>
+        </div>
+      </div>
+
+      <div class="team blue">
+        <div class="name" id="blue-name">Blue</div>
+        <div class="score" id="blue-score">0</div>
+        <button data-team="blue" class="goal-btn">+1 Goal</button>
+      </div>
+    </section>
+
+    <section class="fleet">
+      <h2>Fleet Health (7 nodes)</h2>
+      <div class="fleet-grid">
+        <div class="fleet-col">
+          <h3>Controllers</h3>
+          <div id="controllers" class="card-list"></div>
+        </div>
+        <div class="fleet-col">
+          <h3>Trucks</h3>
+          <div id="trucks" class="card-list"></div>
+        </div>
+        <div class="fleet-col">
+          <h3>Lighting</h3>
+          <div id="lighting" class="card-list"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="pairing">
+      <h2>Pairing Matrix</h2>
+      <div class="pairing-row">
+        <select id="pair-controller"></select>
+        <span>&harr;</span>
+        <select id="pair-truck"></select>
+        <button id="pair-btn">Pair</button>
+      </div>
+      <div id="pairing-list" class="pairing-list"></div>
+    </section>
+
+    <section class="history">
+      <h2>Match History</h2>
+      <table id="history-table">
+        <thead>
+          <tr><th>Ended</th><th>Red</th><th>Blue</th><th>Score</th><th>Winner</th></tr>
+        </thead>
+        <tbody id="history-body"></tbody>
+      </table>
+    </section>
+  </main>
+
+  <script src="/app.js"></script>
+</body>
+</html>

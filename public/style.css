@@ -1,0 +1,137 @@
+:root {
+  --bg: #0b0e14;
+  --panel: #131722;
+  --border: #232838;
+  --red: #ef4444;
+  --blue: #3b82f6;
+  --text: #e6e8ee;
+  --muted: #8891a7;
+  --green: #22c55e;
+  --amber: #f59e0b;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.topbar h1 { font-size: 1.1rem; margin: 0; }
+
+.pill {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.pill.online { background: rgba(34,197,94,0.15); color: var(--green); }
+.pill.offline { background: rgba(239,68,68,0.15); color: var(--red); }
+
+main { padding: 20px; max-width: 1100px; margin: 0 auto; }
+
+.scoreboard {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 16px;
+  align-items: center;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 24px;
+}
+
+.team { text-align: center; }
+.team .name { font-size: 0.9rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.team .score { font-size: 3.5rem; font-weight: 800; line-height: 1.1; }
+.team.red .score { color: var(--red); }
+.team.blue .score { color: var(--blue); }
+
+.goal-btn {
+  margin-top: 8px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+}
+.team.red .goal-btn { background: var(--red); color: white; }
+.team.blue .goal-btn { background: var(--blue); color: white; }
+
+.clock-block { text-align: center; }
+.clock { font-size: 2.5rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+.badge {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--amber);
+  color: #1a1200;
+  font-weight: 700;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  animation: pulse 1s infinite;
+}
+.badge.hidden { display: none; }
+
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+.controls { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; }
+.controls button {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: #1a1f2e;
+  color: var(--text);
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+.controls button:hover { border-color: var(--muted); }
+
+h2 { font-size: 1rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px; }
+h3 { font-size: 0.85rem; color: var(--muted); margin: 0 0 8px; }
+
+.fleet { margin-bottom: 24px; }
+.fleet-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+.card-list { display: flex; flex-direction: column; gap: 8px; }
+
+.device-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 0.8rem;
+}
+.device-card .mac { font-family: monospace; color: var(--muted); font-size: 0.7rem; }
+.device-card .status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
+.device-card .status-dot.online { background: var(--green); }
+.device-card .status-dot.offline { background: var(--red); }
+.device-card .meta { color: var(--muted); margin-top: 4px; }
+.device-card.frozen { border-color: var(--amber); }
+
+.pairing { margin-bottom: 24px; }
+.pairing-row { display: flex; gap: 8px; align-items: center; margin-bottom: 10px; }
+.pairing-row select, .pairing-row button {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: #1a1f2e;
+  color: var(--text);
+}
+.pairing-list { font-size: 0.8rem; color: var(--muted); display: flex; flex-direction: column; gap: 4px; }
+
+table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--border); }
+th { color: var(--muted); font-weight: 600; font-size: 0.75rem; text-transform: uppercase; }

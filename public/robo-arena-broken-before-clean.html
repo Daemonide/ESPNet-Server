@@ -663,7 +663,7 @@
 
     <div class="save-bar">
       <span class="save-msg" id="settingsSavedMsg">✓ Settings saved</span>
-      <button type="button">SAVE SETTINGS</button>
+      <button class="btn-primary" onclick="saveSettings()">Save settings</button>
     </div>
   </div>
 
@@ -766,97 +766,42 @@ async function apiCall(path, options = {}) {
   return text ? JSON.parse(text) : null;
 }
 
-function normalizePlayer(raw) {
-  const p = raw?.player ?? raw;
+const api = {
+  getStatus:       () => apiCall("/api/status"),
 
-  return {
-    id: p.id,
-    name: p.name ?? '',
-    team: p.team ?? 'bench',
-    controller: p.controller ?? p.controllerMac ?? '—',
-    controllerMac: p.controllerMac ?? null,
-    matches: p.matches ?? 0,
-    wins: p.wins ?? 0,
-    available: p.available ?? true,
-    createdAt: p.createdAt
-  };
-}
+  getDevices:      () => apiCall("/api/devices"),
+  setDeviceTeam:   (mac, team) => apiCall(`/api/devices/${mac}/team`, { method: "PUT", body: { team } }),
+  setDeviceType:   (mac, nodeType) => apiCall(`/api/devices/${mac}/node-type`, { method: "PUT", body: { nodeType } }),
+  setDeviceLabel:  (mac, label) => apiCall(`/api/devices/${mac}/label`, { method: "PUT", body: { label } }),
+  deleteDevice:    (mac) => apiCall(`/api/devices/${mac}`, { method: "DELETE" }),
 
+  pairDevices:     (controllerMac, truckMac) => apiCall("/api/pairing", { method: "POST", body: { controllerMac, truckMac } }),
+  unpairDevice:    (mac) => apiCall(`/api/pairing/${mac}`, { method: "DELETE" }),
 
-const api = { 
-  getStatus:       () => apiCall("/api/status"), 
+  getMatchState:   () => apiCall("/api/match/state"),
+  getMatchHistory: () => apiCall("/api/match/history"),
+  startMatch:      (playerRedName, playerBlueName) => apiCall("/api/match/start", { method: "POST", body: { playerRedName, playerBlueName } }),
+  pauseMatch:      () => apiCall("/api/match/pause", { method: "POST" }),
+  resumeMatch:     () => apiCall("/api/match/resume", { method: "POST" }),
+  resetMatch:      () => apiCall("/api/match/reset", { method: "POST" }),
+  adjustTime:      (deltaMs) => apiCall("/api/match/time", { method: "POST", body: { deltaMs } }),
+  scoreGoal:       (team) => apiCall("/api/match/goal", { method: "POST", body: { team } }),
+  undoGoal:        () => apiCall("/api/match/undo", { method: "POST" }),
 
-  // Settings
-getSettings:     () => apiCall("/api/settings"),
+  triggerKick:     (mac) => apiCall("/api/powerups/kick", { method: "POST", body: { mac } }),
+  triggerEmp:      (mac, targetTeam) => apiCall("/api/powerups/emp", { method: "POST", body: { mac, targetTeam } }),
 
-saveSettings:    (settings) => apiCall("/api/settings", {
-  method: "PUT",
-  body: settings
-}),
+  /* ---- Not yet implemented on your server — see BACKEND_TODO.md ---- */
+  getPlayers:      () => apiCall("/api/players"),
+  addPlayer:       (player) => apiCall("/api/players", { method: "POST", body: player }),
+  updatePlayer:    (id, patch) => apiCall(`/api/players/${id}`, { method: "PATCH", body: patch }),
+  removePlayer:    (id) => apiCall(`/api/players/${id}`, { method: "DELETE" }),
 
-  getDevices:      () => apiCall("/api/devices"), 
-  setDeviceTeam:   (mac, team) => apiCall(`/api/devices/${mac}/team`, { method: "PUT", body: { team } }), 
-  setDeviceType:   (mac, nodeType) => apiCall(`/api/devices/${mac}/node-type`, { method: "PUT", body: { nodeType } }), 
-  setDeviceLabel:  (mac, label) => apiCall(`/api/devices/${mac}/label`, { method: "PUT", body: { label } }), 
-  deleteDevice:    (mac) => apiCall(`/api/devices/${mac}`, { method: "DELETE" }), 
-
-  pairDevices:     (controllerMac, truckMac) => apiCall("/api/pairing", { method: "POST", body: { controllerMac, truckMac } }), 
-  unpairDevice:    (mac) => apiCall(`/api/pairing/${mac}`, { method: "DELETE" }), 
-
-  getMatchState:   () => apiCall("/api/match/state"), 
-  getMatchHistory: () => apiCall("/api/match/history"), 
-  startMatch:      (playerRedName, playerBlueName) => apiCall("/api/match/start", { method: "POST", body: { playerRedName, playerBlueName } }), 
-  pauseMatch:      () => apiCall("/api/match/pause", { method: "POST" }), 
-  resumeMatch:     () => apiCall("/api/match/resume", { method: "POST" }), 
-  resetMatch:      () => apiCall("/api/match/reset", { method: "POST" }), 
-  adjustTime:      (deltaMs) => apiCall("/api/match/time", { method: "POST", body: { deltaMs } }), 
-  scoreGoal:       (team) => apiCall("/api/match/goal", { method: "POST", body: { team } }), 
-  undoGoal:        () => apiCall("/api/match/undo", { method: "POST" }), 
-
-  triggerKick:     (mac) => apiCall("/api/powerups/kick", { method: "POST", body: { mac } }), 
-  triggerEmp:      (mac, targetTeam) => apiCall("/api/powerups/emp", { method: "POST", body: { mac, targetTeam } }), 
-
-  getPlayers: async () => { 
-    const res = await apiCall("/api/players"); 
-    const list = Array.isArray(res) ? res : (res?.players ?? []); 
-    return list.map(normalizePlayer); 
-  }, 
-
-  addPlayer: async (player) => { 
-    const backendPlayer = { 
-      name: player.name, 
-      team: player.team === "bench" ? null : player.team, 
-      controllerMac: player.controllerMac ?? null 
-    }; 
-
-    const res = await apiCall("/api/players", { 
-      method: "POST", 
-      body: backendPlayer 
-    }); 
-
-    return normalizePlayer(res); 
-  }, 
-
-  updatePlayer: async (id, patch) => { 
-    const res = await apiCall(`/api/players/${id}`, { 
-      method: "PUT", 
-      body: patch 
-    }); 
-
-    return normalizePlayer(res); 
-  }, 
-
-  removePlayer: async (id) => { 
-    return apiCall(`/api/players/${id}`, { 
-      method: "DELETE" 
-    }); 
-  }, 
-
-  getQueue:        () => apiCall("/api/queue"), 
-  addToQueue:      (redPlayerId, bluePlayerId) => apiCall("/api/queue", { method: "POST", body: { redPlayerId, bluePlayerId } }), 
-  removeFromQueue: (id) => apiCall(`/api/queue/${id}`, { method: "DELETE" }), 
-  reassignQueue:   (id, side, playerId) => apiCall(`/api/queue/${id}`, { method: "PATCH", body: { side, playerId } }), 
-  startQueueMatch: (id) => apiCall(`/api/queue/${id}/start`, { method: "POST" }), 
+  getQueue:        () => apiCall("/api/queue"),
+  addToQueue:      (redPlayerId, bluePlayerId) => apiCall("/api/queue", { method: "POST", body: { redPlayerId, bluePlayerId } }),
+  removeFromQueue: (id) => apiCall(`/api/queue/${id}`, { method: "DELETE" }),
+  reassignQueue:   (id, side, playerId) => apiCall(`/api/queue/${id}`, { method: "PATCH", body: { side, playerId } }),
+  startQueueMatch: (id) => apiCall(`/api/queue/${id}/start`, { method: "POST" }),
 };
 
 /* Tiny pub/sub so WebSocket events and local fallback code can share renderers. */
@@ -1187,51 +1132,15 @@ function renderTicker(){
 /* Load initial state from the backend on page load. Match/devices come from
    your real API; players/queue/history fail gracefully (with a ticker note)
    until BACKEND_TODO.md is implemented. */
-
-   async function bootstrapFromBackend() {
-  try {
-
-    // 1. Load players FIRST
-    try {
-      const p = await api.getPlayers();
-
-      players = Array.isArray(p)
-        ? p
-        : [];
-
-      renderPlayers();
-
-    } catch (err) {
-      console.error("Failed to load players:", err);
-      players = [];
-    }
-
-
-    // 2. Load queue
-    try {
-      const q = await api.getQueue();
-
-      if (Array.isArray(q)) {
-        matchQueue = q;
-
-      } else if (q && Array.isArray(q.queue)) {
-        matchQueue = q.queue;
-
-      } else {
-        matchQueue = [];
-      }
-
-      renderQueue();
-
-    } catch (err) {
-      console.error("Failed to load queue:", err);
-      matchQueue = [];
-      renderQueue();
-    }
-
-  } catch (err) {
-    console.error("Backend bootstrap failed:", err);
-  }
+async function bootstrapFromBackend(){
+  try{ applyServerState(await api.getMatchState()); }
+  catch(e){ setConnStatus('Backend unreachable', false); pushTickerEvent({label:'BACKEND UNREACHABLE', detail: 'check that the server is running on :8880'}); }
+  try{ const h = await api.getMatchHistory(); if(Array.isArray(h)){ matchHistory = h; renderHistory(); } }catch(e){}
+  renderAudio();
+  try{ const p = await api.getPlayers(); if(Array.isArray(p)){ players = p; renderPlayers(); } }
+  catch(e){ pushTickerEvent({label:'PLAYER ROSTER NOT AVAILABLE', detail:'implement /api/players — see BACKEND_TODO.md'}); }
+  try{ const q = await api.getQueue(); if(Array.isArray(q)){ matchQueue = q; renderQueue(); } }
+  catch(e){ pushTickerEvent({label:'MATCH QUEUE NOT AVAILABLE', detail:'implement /api/queue — see BACKEND_TODO.md'}); }
 }
 
 function refStart(){
@@ -1304,9 +1213,9 @@ function renderPlayers(){
       <td>${p.matches}</td>
       <td>${p.wins}</td>
       <td>
-        <div class="switch status-switch ${p.available?'on':''}" onclick="togglePlayerAvailable('${p.id}')" title="${p.available?'Available':'Unavailable'}"><div class="knob"></div></div>
+        <div class="switch status-switch ${p.available?'on':''}" onclick="togglePlayerAvailable(${p.id})" title="${p.available?'Available':'Unavailable'}"><div class="knob"></div></div>
       </td>
-      <td><button class="icon-btn" onclick="removePlayer('${p.id}')">✕ Remove</button></td>
+      <td><button class="icon-btn" onclick="removePlayer(${p.id})">✕ Remove</button></td>
     </tr>`).join('');
   renderPlayerSelects();
   renderCurrentMatchBanner();
@@ -1350,56 +1259,17 @@ function removePlayer(id){
 }
 
 /* ---- next-match setup: only available players show up here ---- */
-function renderPlayerSelects() {
+function renderPlayerSelects(){
   const redSel = document.getElementById('matchRedPlayer');
   const blueSel = document.getElementById('matchBluePlayer');
-
-  if (!redSel || !blueSel) return;
-
-  const prevRed = redSel.value;
-  const prevBlue = blueSel.value;
-
-  const avail = players.filter(p => p.available);
-
-  const redPlayers = avail.filter(p => p.team === 'red');
-  const bluePlayers = avail.filter(p => p.team === 'blue');
-
-  const redOpts = redPlayers
-    .map(p =>
-      `<option value="${p.id}">${p.name} · red</option>`
-    )
-    .join('');
-
-  const blueOpts = bluePlayers
-    .map(p =>
-      `<option value="${p.id}">${p.name} · blue</option>`
-    )
-    .join('');
-
-  redSel.innerHTML = redOpts;
-  blueSel.innerHTML = blueOpts;
-
-  // Preserve previous selection if that player still exists.
-  if (redPlayers.some(p => String(p.id) === String(prevRed))) {
-    redSel.value = prevRed;
-  } else if (redPlayers.length > 0) {
-    redSel.value = redPlayers[0].id;
-  }
-
-  if (bluePlayers.some(p => String(p.id) === String(prevBlue))) {
-    blueSel.value = prevBlue;
-  } else if (bluePlayers.length > 0) {
-    blueSel.value = bluePlayers[0].id;
-  }
-
-  const warning = document.getElementById('setupWarning');
-
-  if (warning) {
-    warning.style.display =
-      redPlayers.length === 0 || bluePlayers.length === 0
-        ? 'block'
-        : 'none';
-  }
+  if(!redSel || !blueSel) return;
+  const prevRed = redSel.value, prevBlue = blueSel.value;
+  const avail = players.filter(p=>p.available);
+  const opts = avail.map(p=>`<option value="${p.id}">${p.name}${p.team!=='bench' ? ' · '+p.team : ''}</option>`).join('');
+  redSel.innerHTML = opts; blueSel.innerHTML = opts;
+  if(avail.some(p=>String(p.id)===prevRed)) redSel.value = prevRed;
+  if(avail.some(p=>String(p.id)===prevBlue)) blueSel.value = prevBlue;
+  document.getElementById('setupWarning').style.display = avail.length<2 ? 'block' : 'none';
 }
 
 function renderCurrentMatchBanner(){
@@ -1457,168 +1327,59 @@ function startMatchNow(){
 }
 
 /* ---- match queue: plan next matches, swap in a substitute if someone is unavailable ---- */
-function addToQueue() {
+function addToQueue(){
   const redSel = document.getElementById('matchRedPlayer');
   const blueSel = document.getElementById('matchBluePlayer');
-
-  if (
-    !redSel.value ||
-    !blueSel.value ||
-    redSel.value === blueSel.value
-  ) {
-    return;
-  }
-
-  const redId = redSel.value;
-  const blueId = blueSel.value;
-
-  api.addToQueue(redId, blueId)
-    .then(item => {
-
-      // Backend may return { ... } or { queue: [...] }
-      const queueItem = item?.queue
-        ? item.queue[item.queue.length - 1]
-        : item;
-
-      if (queueItem) {
-        matchQueue.push(queueItem);
-        renderQueue();
-      }
-
-    })
-    .catch(err => {
-      console.error("Queue add failed:", err);
-    });
+  if(!redSel.value || !blueSel.value || redSel.value===blueSel.value) return;
+  const redId = Number(redSel.value), blueId = Number(blueSel.value);
+  api.addToQueue(redId, blueId).then(item=>{
+    matchQueue.push(item); renderQueue();
+  }).catch(()=>{
+    matchQueue.push({id:queueIdCounter++, redId, blueId, issue:null});
+    renderQueue();
+  });
 }
 
-function renderQueue() {
+function renderQueue(){
   const box = document.getElementById('queueList');
   const empty = document.getElementById('queueEmpty');
-
-  if (!box) return;
-
-  if (!matchQueue.length) {
-    box.innerHTML = '';
-    if (empty) empty.style.display = 'block';
-    return;
-  }
-
-  if (empty) empty.style.display = 'none';
-
-  box.innerHTML = matchQueue.map(q => {
-
-    // Support backend field names
-    const redId = q.playerRedId ?? q.redId;
-    const blueId = q.playerBlueId ?? q.blueId;
-
-    // IDs are UUID strings, so ALWAYS compare as strings
-    const redP = players.find(
-      p => String(p.id) === String(redId)
-    );
-
-    const blueP = players.find(
-      p => String(p.id) === String(blueId)
-    );
-
+  if(!box) return;
+  if(matchQueue.length===0){ box.innerHTML=''; empty.style.display='block'; return; }
+  empty.style.display='none';
+  box.innerHTML = matchQueue.map(q=>{
+    const redP = players.find(p=>p.id===q.redId);
+    const blueP = players.find(p=>p.id===q.blueId);
     let issue = null;
-
-    if (!redP || !redP.available) {
-      issue = 'red';
-    } else if (!blueP || !blueP.available) {
-      issue = 'blue';
-    }
-
+    if(!redP || !redP.available) issue = 'red';
+    else if(!blueP || !blueP.available) issue = 'blue';
     q.issue = issue;
-
-    const subOptions = players
-      .filter(p =>
-        p.available &&
-        String(p.id) !== String(redId) &&
-        String(p.id) !== String(blueId)
-      )
-      .map(p =>
-        `<option value="${p.id}">${p.name}</option>`
-      )
-      .join('');
-
+    const subOptions = players.filter(p=>p.available && p.id!==q.redId && p.id!==q.blueId)
+      .map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
     return `
-      <div class="queue-row">
-
-        <div class="queue-names">
-          <span class="r">
-            ${redP ? redP.name : 'Removed player'}
-          </span>
-
-          <span class="vs"> vs </span>
-
-          <span class="b">
-            ${blueP ? blueP.name : 'Removed player'}
-          </span>
-        </div>
-
-        <div class="queue-actions">
-          <button
-            class="btn small"
-            onclick="startQueueMatch('${q.id}')">
-            ▶ Start
-          </button>
-
-          <button
-            class="icon-btn"
-            onclick="removeFromQueue('${q.id}')">
-            ✕ Remove
-          </button>
-        </div>
-
-        ${issue ? `
-          <div class="queue-warn">
-
-            ⚠ ${
-              issue === 'red'
-                ? (redP ? redP.name : 'Red player')
-                : (blueP ? blueP.name : 'Blue player')
-            }
-
-            is not available right now — pick a replacement:
-
-            <select id="sub-${q.id}">
-              ${
-                subOptions ||
-                '<option value="">No one else available</option>'
-              }
-            </select>
-
-            <button
-              class="btn small"
-              onclick="reassignQueueSlot('${q.id}','${issue}')">
-              Confirm swap
-            </button>
-
-          </div>
-        ` : ''}
-
+    <div class="queue-row">
+      <div class="queue-names">
+        <span class="r">${redP ? redP.name : 'Removed player'}</span>
+        <span class="vs"> vs </span>
+        <span class="b">${blueP ? blueP.name : 'Removed player'}</span>
       </div>
-    `;
+      <div class="queue-actions">
+        <button class="btn small" onclick="startQueueMatch(${q.id})">▶ Start</button>
+        <button class="icon-btn" onclick="removeFromQueue(${q.id})">✕ Remove</button>
+      </div>
+      ${issue ? `
+      <div class="queue-warn">
+        ⚠ ${issue==='red' ? (redP?redP.name:'Red player') : (blueP?blueP.name:'Blue player')} is not available right now — pick a replacement:
+        <select id="sub-${q.id}">${subOptions || '<option value="">No one else available</option>'}</select>
+        <button class="btn small" onclick="reassignQueueSlot(${q.id},'${issue}')">Confirm swap</button>
+      </div>` : ''}
+    </div>`;
   }).join('');
 }
 
-async function removeFromQueue(id) {
-  try {
-    console.log("[queue] removing:", id);
-
-    const response = await api.removeFromQueue(id);
-
-    console.log("[queue] removed successfully:", response);
-
-    matchQueue = matchQueue.filter(q => q.id !== id);
-
-    renderQueue();
-
-  } catch (error) {
-    console.error("[queue] remove failed:", error);
-
-    alert("Failed to remove queue item. Check the server.");
-  }
+function removeFromQueue(id){
+  api.removeFromQueue(id).catch(()=>{});
+  matchQueue = matchQueue.filter(q=>q.id!==id);
+  renderQueue();
 }
 
 function reassignQueueSlot(qid, side){
@@ -1632,43 +1393,19 @@ function reassignQueueSlot(qid, side){
   renderQueue();
 }
 
-function startQueueMatch(id) {
-
-  const item = matchQueue.find(
-    q => String(q.id) === String(id)
-  );
-
-  if (!item) return;
-
-  const redId = item.playerRedId ?? item.redId;
-  const blueId = item.playerBlueId ?? item.blueId;
-
-  const redP = players.find(
-    p => String(p.id) === String(redId)
-  );
-
-  const blueP = players.find(
-    p => String(p.id) === String(blueId)
-  );
-
-  if (!redP || !redP.available || !blueP || !blueP.available) {
-    renderQueue();
-    return;
-  }
-
-  api.startQueueMatch(id)
-    .then(() => {
-      matchQueue = matchQueue.filter(
-        q => String(q.id) !== String(id)
-      );
-
-      renderQueue();
-
-      applyMatch(redP.id, blueP.id);
-    })
-    .catch(err => {
-      console.error("Failed to start queued match:", err);
-    });
+function startQueueMatch(qid){
+  const item = matchQueue.find(q=>q.id===qid);
+  if(!item) return;
+  const redP = players.find(p=>p.id===item.redId);
+  const bluePlayer = players.find(p=>p.id===item.blueId);
+  if(!redP || !redP.available || !bluePlayer || !bluePlayer.available){ renderQueue(); return; }
+  // /api/queue/:id/start isn't in your backend yet (BACKEND_TODO.md) — either way,
+  // applyMatch() below calls the REAL /api/match/start endpoint, so the match
+  // actually starts even before you've added the queue-specific route.
+  api.startQueueMatch(qid).catch(()=>{});
+  applyMatch(item.redId, item.blueId);
+  matchQueue = matchQueue.filter(q=>q.id!==qid);
+  renderQueue();
 }
 
 let previousMatchHasEnded = false;
@@ -1731,182 +1468,20 @@ function collectSettingsPayload(){
     masterVolume: range ? Number(range.value) : undefined,
   };
 }
-
-async function loadSettingsFromBackend() {
-  try {
-    const response = await api.getSettings();
-
-    const settings = response?.settings ?? response;
-
-    if (!settings) {
-      throw new Error("Settings not received from backend");
-    }
-
-    const screen = document.getElementById("screen-settings");
-
-    if (!screen) return;
-
-    // ---------------------------------------------------------
-    // Number inputs
-    // ---------------------------------------------------------
-
-    const nums = [
-      ...screen.querySelectorAll('input[type="number"]')
-    ];
-
-    if (nums[0]) {
-      nums[0].value = settings.matchDurationMin;
-    }
-
-    if (nums[1]) {
-      nums[1].value = settings.intenseModeTriggerSec;
-    }
-
-    if (nums[2]) {
-      nums[2].value = settings.goalLimit;
-    }
-
-    if (nums[3]) {
-      nums[3].value = settings.kickerCooldownSec;
-    }
-
-    if (nums[4]) {
-      nums[4].value = settings.empCooldownSec;
-    }
-
-    // ---------------------------------------------------------
-    // Selects
-    // ---------------------------------------------------------
-
-    const selects = [
-      ...screen.querySelectorAll("select")
-    ];
-
-    if (selects[0]) {
-      selects[0].value = settings.winCondition;
-    }
-
-    if (selects[1]) {
-      selects[1].value = settings.lightingMode;
-    }
-
-    // ---------------------------------------------------------
-    // Switches
-    // ---------------------------------------------------------
-
-    const values = [
-      settings.suddenDeathOnTie,
-      settings.autoPauseOnDisconnect,
-      settings.kickerEnabled,
-      settings.empEnabled,
-      settings.confettiOnGoal,
-      settings.arenaShakeOnGoal,
-      settings.ledSweepInIntense,
-      settings.goalSound,
-      settings.intenseModeMusic,
-      settings.matchEndMusic,
-    ];
-
-    const switches = [
-      ...screen.querySelectorAll(".switch")
-    ];
-
-    switches.forEach((sw, index) => {
-      sw.classList.toggle("on", Boolean(values[index]));
-    });
-
-    // ---------------------------------------------------------
-    // Master volume
-    // ---------------------------------------------------------
-
-    const range = screen.querySelector(
-      'input[type="range"]'
-    );
-
-    if (range && settings.masterVolume !== undefined) {
-      range.value = settings.masterVolume;
-    }
-
-    console.log("[settings] loaded from backend", settings);
-
-  } catch (error) {
-    console.error(
-      "[settings] failed to load:",
-      error
-    );
-  }
+function saveSettings(){
+  const msg = document.getElementById('settingsSavedMsg');
+  // No live settings endpoint exists yet (env-only config — see the note above).
+  // Being explicit here instead of faking a "saved" confirmation.
+  msg.textContent = 'Not saved — no settings API on the backend yet (see BACKEND_TODO.md)';
+  msg.classList.add('show');
+  setTimeout(()=>msg.classList.remove('show'), 3000);
 }
-
-
-async function saveSettingsToBackend() {
-  try {
-    const payload = collectSettingsPayload();
-
-    console.log(
-      "[settings] saving:",
-      payload
-    );
-
-    const response =
-      await api.saveSettings(payload);
-
-    const settings =
-      response?.settings ?? response;
-
-    console.log(
-      "[settings] saved successfully:",
-      settings
-    );
-
-    alert("Settings saved successfully.");
-
-  } catch (error) {
-    console.error(
-      "[settings] save failed:",
-      error
-    );
-
-    alert(
-      "Failed to save settings. Check the server."
-    );
-  }
-}
-
-
-
-function setupSettingsBackend() {
-  const screen =
-    document.getElementById("screen-settings");
-
-  if (!screen) return;
-
-  const saveButton =
-    screen.querySelector("button");
-
-  if (!saveButton) return;
-
-  if (
-    saveButton.textContent
-      .trim()
-      .toLowerCase()
-      .includes("save settings")
-  ) {
-    saveButton.addEventListener(
-      "click",
-      saveSettingsToBackend
-    );
-  }
-}
-
 
 renderPlayers();
 renderQueue();
 renderHistory();
 refSyncDisplay();
 bootstrapFromBackend(); // pulls live match/players/queue/history the moment a backend is configured
-
-loadSettingsFromBackend();
-setupSettingsBackend();
 </script>
 </body>
 </html>

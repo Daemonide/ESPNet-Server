@@ -22,6 +22,12 @@
     font-family:'Rajdhani';font-weight:600;font-size:14px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;}
   .nav button.active{background:var(--panel2);color:var(--gold);}
 
+  .toolbar{display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap;}
+  .toolbar button{background:var(--panel2);border:1px solid var(--line);color:var(--sub);
+    padding:7px 14px;border-radius:6px;font-family:'Inter';font-size:11px;letter-spacing:.5px;
+    text-transform:uppercase;cursor:pointer;font-weight:600;}
+  .toolbar button.active{background:var(--gold);color:#1a1400;border-color:var(--gold);}
+  .toolbar .label{font-size:11px;color:var(--sub);text-transform:uppercase;letter-spacing:1px;margin-right:4px;}
 
   .screen{display:none;}
   .screen.active{display:block;animation:fadein .3s ease;}
@@ -331,6 +337,137 @@
   .status-switch .knob{width:14px;height:14px;}
   .status-switch.on .knob{left:18px;}
 </style>
+
+<style id="production-ui-overrides">
+:root{
+  --bg:#05070a;
+  --panel:#0b0f14;
+  --panel2:#10161e;
+  --line:#1b2530;
+  --line2:#263341;
+  --txt:#f4f7fb;
+  --sub:#7f8b9a;
+  --gold:#ffd34f;
+  --red:#ff4054;
+  --blue:#32b7ff;
+  --green:#42e477;
+}
+html,body{min-height:100%;background:
+  radial-gradient(circle at 50% -20%,rgba(255,211,79,.055),transparent 35%),
+  #05070a!important;}
+body{padding:0!important;font-family:Inter,system-ui,sans-serif!important;}
+.wrap{max-width:none!important;min-height:100vh;display:grid;grid-template-columns:220px 1fr;gap:0;margin:0!important;}
+
+.nav{
+  position:sticky!important;top:0;height:100vh;width:220px!important;
+  margin:0!important;padding:22px 14px!important;border:0!important;border-right:1px solid var(--line)!important;
+  border-radius:0!important;background:rgba(8,11,15,.96)!important;
+  display:flex!important;flex-direction:column!important;gap:5px!important;
+}
+.nav:before{
+  content:"ROBO\\A SOCCER";white-space:pre;display:block;
+  font-family:Rajdhani,sans-serif;font-weight:700;font-size:24px;line-height:.82;
+  letter-spacing:4px;color:#fff;padding:5px 12px 28px;
+}
+.nav:after{
+  content:"ARENA CONTROL";display:block;order:-1;
+  position:absolute;top:75px;left:26px;font-size:8px;letter-spacing:2px;color:var(--gold);
+}
+.nav button{
+  width:100%!important;text-align:left!important;padding:12px 14px!important;
+  border-radius:9px!important;font-size:12px!important;letter-spacing:1.5px!important;
+  color:#7d8998!important;transition:.18s!important;
+}
+.nav button:hover{background:#10161d!important;color:#fff!important;}
+.nav button.active{
+  background:linear-gradient(90deg,rgba(255,211,79,.14),rgba(255,211,79,.035))!important;
+  color:var(--gold)!important;box-shadow:inset 3px 0 0 var(--gold)!important;
+}
+.nav button:nth-child(1)::before{content:"●";margin-right:10px;color:var(--green);}
+.nav button:nth-child(2)::before{content:"◈";margin-right:10px;}
+.nav button:nth-child(3)::before{content:"⇄";margin-right:10px;}
+.nav button:nth-child(4)::before{content:"♙";margin-right:10px;}
+.nav button:nth-child(5)::before{content:"◷";margin-right:10px;}
+.nav button:nth-child(6)::before{content:"♫";margin-right:10px;}
+.nav button:nth-child(7)::before{content:"⚙";margin-right:10px;}
+
+.screen{padding:22px 26px 32px;min-width:0;}
+#screen-live{padding-top:18px;}
+.toolbar{display:none!important;}
+
+.ref-panel{
+  position:fixed!important;left:246px;right:26px;bottom:18px;top:auto!important;
+  z-index:100!important;margin:0!important;
+}
+.dock{
+  backdrop-filter:blur(18px);background:rgba(11,15,20,.92)!important;
+  border:1px solid rgba(255,211,79,.25)!important;border-radius:14px!important;
+  padding:10px 14px!important;box-shadow:0 16px 45px rgba(0,0,0,.55)!important;
+}
+.dockhead{margin-bottom:8px!important;}
+.dockhead h3{font-size:11px!important;}
+.dockrow{gap:12px!important;}
+.grp{gap:5px!important;}
+.grp .gl{font-size:8px!important;}
+.btn{padding:8px 11px!important;font-size:11px!important;border-radius:7px!important;}
+.btn.danger{background:#261015!important;color:#ff6574!important;border-color:rgba(255,64,84,.4)!important;}
+
+.arena{
+  min-height:calc(100vh - 90px)!important;height:calc(100vh - 90px)!important;
+  border-radius:18px!important;border:1px solid #1d2934!important;
+  box-shadow:0 25px 80px rgba(0,0,0,.42),inset 0 1px rgba(255,255,255,.04)!important;
+}
+.topbar{padding:18px 24px 0!important;}
+.brand{font-size:18px!important;letter-spacing:5px!important;}
+.status-pill{background:rgba(5,8,12,.7)!important;padding:7px 13px!important;}
+.conn{gap:12px!important;}
+
+.field{
+  grid-template-columns:1fr 230px 1fr!important;
+  padding:45px 30px 12px!important;
+  height:calc(100% - 88px)!important;
+}
+.truck-wrap{max-width:300px!important;}
+.tname{font-size:19px!important;}
+.pname{font-size:11px!important;}
+.score{font-size:106px!important;}
+.timer{font-size:78px!important;}
+.vs{font-size:11px!important;}
+.ball-wrap,.ball{width:48px!important;height:48px!important;}
+.ticker{margin:4px 20px 0!important;opacity:.8;}
+
+.section-title{margin-top:0!important;}
+.card,.match-card{background:linear-gradient(180deg,#0c1117,#090d12)!important;border-color:#1b2530!important;}
+.footer-note{display:none!important;}
+
+@media(max-width:1000px){
+  .wrap{grid-template-columns:76px 1fr;}
+  .nav{width:76px!important;padding:18px 8px!important;}
+  .nav:before{font-size:0;content:"RS";letter-spacing:1px;text-align:center;padding:5px 0 32px;color:var(--gold);}
+  .nav:after{display:none;}
+  .nav button{font-size:0!important;text-align:center!important;padding:13px 6px!important;}
+  .nav button::before{margin:0!important;font-size:15px!important;}
+  .screen{padding:14px;}
+  .ref-panel{left:90px;right:14px;}
+  .arena{height:auto!important;min-height:720px!important;}
+  .field{grid-template-columns:1fr!important;gap:6px!important;height:auto!important;padding-top:32px!important;}
+  .center{order:-1;margin-bottom:4px;}
+  .truck-wrap{max-width:220px!important;}
+  .score{font-size:70px!important;}
+  .ticker{display:none!important;}
+}
+@media(max-width:700px){
+  .wrap{display:block;}
+  .nav{position:relative!important;width:100%!important;height:auto!important;display:flex!important;flex-direction:row!important;overflow:auto;border-right:0!important;border-bottom:1px solid var(--line)!important;}
+  .nav:before,.nav:after{display:none;}
+  .nav button{min-width:100px!important;font-size:10px!important;text-align:center!important;}
+  .nav button::before{display:none;}
+  .screen{padding:10px;}
+  .ref-panel{position:static!important;margin-top:10px!important;}
+  .arena{min-height:760px!important;}
+}
+</style>
+
 </head>
 <body>
 <div class="wrap">
@@ -347,6 +484,17 @@
 
   <!-- ============ LIVE SCREEN ============ -->
   <div class="screen active" id="screen-live">
+
+    <div class="toolbar">
+      <span class="label">Design preview</span>
+      <button class="active" id="toolbarReadyBtn" onclick="setState('ready',this)">Match ready</button>
+      <button onclick="setState('live',this)">Match live</button>
+      <button onclick="setState('intense',this)">Intense mode</button>
+      <button onclick="setState('goalred',this)">Goal — red</button>
+      <button onclick="setState('goalblue',this)">Goal — blue</button>
+      <button onclick="setState('ended',this)">Match ended</button>
+      <span style="font-size:10px;color:var(--sub);margin-left:6px;">for previewing visuals only — real scoring happens in the Referee panel below ↓</span>
+    </div>
 
     <!-- ============ REFEREE PANEL — permanent, always visible, drives the real live match ============ -->
     <div class="ref-panel" id="refPanel">
@@ -368,16 +516,10 @@
             <button class="btn" onclick="refUndoGoal()">Undo last goal</button>
           </div></div>
           <div class="grp"><div class="gl">Timer</div><div class="btns">
-            <button class="btn" onclick="refAdjustTimer(30000)">+30 sec</button>
-            <button class="btn" onclick="refAdjustTimer(-30000)">-30 sec</button>
-            <button class="btn" onclick="refAdjustTimer(60000)">+1 min</button>
-            <button class="btn" onclick="refAdjustTimer(-60000)">-1 min</button>
-          </div></div>
-          <div class="grp"><div class="gl">Power-ups (referee override / no-hardware testing)</div><div class="btns">
-            <button class="btn red" onclick="refTriggerKick('red')">Fire Red Kicker</button>
-            <button class="btn blue" onclick="refTriggerKick('blue')">Fire Blue Kicker</button>
-            <button class="btn red" onclick="refTriggerEmp('red')">EMP Red → Blue</button>
-            <button class="btn blue" onclick="refTriggerEmp('blue')">EMP Blue → Red</button>
+            <button class="btn" onclick="refAdjustTimer(30)">+30 sec</button>
+            <button class="btn" onclick="refAdjustTimer(-30)">-30 sec</button>
+            <button class="btn" onclick="refAdjustTimer(60)">+1 min</button>
+            <button class="btn" onclick="refAdjustTimer(-60)">-1 min</button>
           </div></div>
         </div>
       </div>
@@ -411,17 +553,17 @@
       <div class="led-strip"></div>
       <div class="topbar">
         <div class="brand">Robo<span>Soccer</span></div>
-        <div class="status-pill"><span class="dot" id="statedot"></span><span id="statelabel">Match ready</span></div>
-        <div class="conn"><span id="connStatus">● Connecting…</span><span id="connDevices">—</span></div>
+        <div class="status-pill"><span class="dot" id="statedot"></span><span id="statelabel">Match ready</span></div><div id="uiClock" style="position:absolute;left:50%;transform:translateX(-50%);top:18px;font-family:Rajdhani,sans-serif;font-size:12px;letter-spacing:2px;color:var(--sub);"></div>
+        <div class="conn"><span>● Arena online</span><span>7/7 devices</span></div>
       </div>
 
       <div class="intense-banner"><span class="tag">⚡ Intense mode — sudden goal</span></div>
-      <div class="goal-flash"><div class="goal-text" id="goaltext"></div></div>
+      <div class="goal-flash"><div class="goal-text" id="goaltext">RED SCORES!</div></div>
 
       <div class="field">
         <div class="truckside red">
           <div class="tname">Red</div>
-          <div class="pname" id="redPname">—</div>
+          <div class="pname">Satyajeet</div>
           <div class="truck-wrap">
           <svg class="truck-svg" viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
             <circle class="tire" cx="70" cy="132" r="46"/><circle class="rim" cx="70" cy="132" r="17"/>
@@ -437,20 +579,20 @@
             <rect x="26" y="40" width="36" height="8" rx="2" fill="currentColor"/>
           </svg>
           </div>
-          <div class="score" id="redscore">00</div>
-          <div class="powerups"><div class="pw ready" id="redkicker">Kicker · Ready</div><div class="pw ready" id="redemp">EMP · Ready</div></div>
+          <div class="score" id="redscore">03</div>
+          <div class="powerups"><div class="pw ready" id="redkicker">Kicker · Ready</div><div class="pw" id="redemp">EMP · Cooldown</div></div>
         </div>
 
         <div class="center">
           <div class="ball-wrap" id="ballWrap"><div class="ball"></div></div>
-          <div class="vs" id="roundLabel">Round 1</div>
-          <div class="timer" id="timer">00<span class="colon">:</span>00</div>
+          <div class="vs">Round 1 · Best of 1</div>
+          <div class="timer" id="timer">00<span class="colon">:</span>44</div>
           <div class="matchstate" id="matchstate">Match ready</div>
         </div>
 
         <div class="truckside blue">
           <div class="tname">Blue</div>
-          <div class="pname" id="bluePname">—</div>
+          <div class="pname">Arjun</div>
           <div class="truck-wrap">
           <svg class="truck-svg" viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
             <circle class="tire" cx="70" cy="132" r="46"/><circle class="rim" cx="70" cy="132" r="17"/>
@@ -466,13 +608,16 @@
             <rect x="26" y="40" width="36" height="8" rx="2" fill="currentColor"/>
           </svg>
           </div>
-          <div class="score" id="bluescore">00</div>
-          <div class="powerups"><div class="pw ready" id="bluekicker">Kicker · Ready</div><div class="pw ready" id="blueemp">EMP · Ready</div></div>
+          <div class="score" id="bluescore">03</div>
+          <div class="powerups"><div class="pw" id="bluekicker">Kicker · Cooldown</div><div class="pw ready" id="blueemp">EMP · Ready</div></div>
         </div>
       </div>
 
-      <div class="ticker" id="ticker">
-        <span id="tickerEmpty" style="color:var(--sub);">No events yet — actions will appear here as they happen.</span>
+      <div class="ticker">
+        <span><b>GOAL — RED</b> · 08:12</span>
+        <span><b>KICKER ACTIVATED</b> · BLUE · 07:40</span>
+        <span><b>EMP ACTIVATED</b> · RED · 05:02</span>
+        <span><b>MATCH ENTERED INTENSE MODE</b></span>
       </div>
     </div>
 
@@ -483,13 +628,17 @@
     <div class="section-title"><h2>Fleet health</h2></div>
     <div class="grid3">
       <div class="card"><h4>Controllers</h4>
-        <div id="fleetControllers"><div style="font-size:12px;color:var(--sub);">Loading…</div></div>
+        <div class="device"><div><div class="name">Controller 1 · Red</div><div class="meta">Paired → Truck 1 · 86%</div></div><span class="stat-online">Online</span></div>
+        <div class="device"><div><div class="name">Controller 2 · Blue</div><div class="meta">Paired → Truck 2 · 91%</div></div><span class="stat-online">Online</span></div>
+        <div class="device"><div><div class="name">Controller 3 · Sub</div><div class="meta">Unpaired</div></div><span class="stat-offline">Offline</span></div>
       </div>
       <div class="card"><h4>Trucks</h4>
-        <div id="fleetTrucks"><div style="font-size:12px;color:var(--sub);">Loading…</div></div>
+        <div class="device"><svg class="mini-truck" viewBox="0 0 320 180" style="color:var(--red)"><circle class="tire" cx="70" cy="132" r="46"/><circle class="tire" cx="230" cy="132" r="46"/><rect x="55" y="72" width="210" height="44" rx="10" fill="currentColor"/><path d="M100 72 L128 32 L208 32 L233 72 Z" fill="currentColor"/></svg><div><div class="name">Truck 1 · Red</div><div class="meta">Kicker ready · 73%</div></div><span class="stat-online">Online</span></div>
+        <div class="device"><svg class="mini-truck" viewBox="0 0 320 180" style="color:var(--blue)"><circle class="tire" cx="70" cy="132" r="46"/><circle class="tire" cx="230" cy="132" r="46"/><rect x="55" y="72" width="210" height="44" rx="10" fill="currentColor"/><path d="M100 72 L128 32 L208 32 L233 72 Z" fill="currentColor"/></svg><div><div class="name">Truck 2 · Blue</div><div class="meta">EMP ready · 68%</div></div><span class="stat-online">Online</span></div>
+        <div class="device"><div><div class="name">Truck 3 · Sub</div><div class="meta">Standby · 100%</div></div><span class="stat-online">Online</span></div>
       </div>
       <div class="card"><h4>Arena lighting</h4>
-        <div id="fleetLighting"><div style="font-size:12px;color:var(--sub);">Loading…</div></div>
+        <div class="device"><div><div class="name">Lighting ESP32</div><div class="meta">Mode: match live</div></div><span class="stat-online">Online</span></div>
       </div>
     </div>
   </div>
@@ -498,7 +647,14 @@
   <div class="screen" id="screen-pairing">
     <div class="section-title"><h2>Pairing matrix</h2></div>
     <div class="card">
-      <div id="pairingList"><div style="font-size:12px;color:var(--sub);">Loading…</div></div>
+      <div class="pair-chain"><div class="node">Controller 1 · Red</div><div class="arrow">→</div>
+        <div class="node"><svg class="mini-truck" viewBox="0 0 320 180" style="color:var(--red)"><circle class="tire" cx="70" cy="132" r="46"/><circle class="tire" cx="230" cy="132" r="46"/><rect x="55" y="72" width="210" height="44" rx="10" fill="currentColor"/></svg>Truck 1 · Red</div>
+        <span class="stat-online">Linked</span></div>
+      <div class="pair-chain"><div class="node">Controller 2 · Blue</div><div class="arrow">→</div>
+        <div class="node"><svg class="mini-truck" viewBox="0 0 320 180" style="color:var(--blue)"><circle class="tire" cx="70" cy="132" r="46"/><circle class="tire" cx="230" cy="132" r="46"/><rect x="55" y="72" width="210" height="44" rx="10" fill="currentColor"/></svg>Truck 2 · Blue</div>
+        <span class="stat-online">Linked</span></div>
+      <div class="pair-chain"><div class="node">Controller 3 · Sub</div><div class="arrow">→</div>
+        <div class="node">Truck 3 · Sub</div><span class="stat-offline">Not paired</span></div>
     </div>
   </div>
 
@@ -510,9 +666,9 @@
       <div>
         <div style="font-size:11px;color:var(--sub);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Currently in arena</div>
         <div style="font-family:'Rajdhani';font-weight:700;font-size:18px;letter-spacing:1px;">
-          <span style="color:var(--red)" id="currentRedName">—</span>
+          <span style="color:var(--red)" id="currentRedName">Satyajeet</span>
           <span style="color:var(--sub);font-weight:600;"> vs </span>
-          <span style="color:var(--blue)" id="currentBlueName">—</span>
+          <span style="color:var(--blue)" id="currentBlueName">Arjun</span>
         </div>
       </div>
       <button class="btn-primary" onclick="showScreen('live', document.getElementById('navLiveBtn'))">Go to live screen</button>
@@ -589,10 +745,14 @@
     <div class="section-title"><h2>Audio / Spotify</h2></div>
     <div class="grid2">
       <div class="card"><h4>Playback</h4>
-        <div id="audioPlayback"><div style="font-size:12px;color:var(--sub);">Loading…</div></div>
+        <div class="track"><div class="art"></div><div><div class="tt">Arena Anthem — Warmup Mix</div><div class="ta">Spotify · connected</div></div></div>
+        <div class="audio-row"><div class="l">Match audio mode</div><div class="v">Live match</div></div>
+        <div class="audio-row"><div class="l">Volume</div><div class="v">72%</div></div>
       </div>
       <div class="card"><h4>Event sounds</h4>
-        <div id="audioEventSounds"><div style="font-size:12px;color:var(--sub);">Loading…</div></div>
+        <div class="audio-row"><div class="l">Goal sound</div><div class="v">Enabled</div></div>
+        <div class="audio-row"><div class="l">Intense mode music</div><div class="v">Enabled</div></div>
+        <div class="audio-row"><div class="l">Match end music</div><div class="v">Enabled</div></div>
       </div>
     </div>
   </div>
@@ -600,14 +760,6 @@
   <!-- ============ SETTINGS ============ -->
   <div class="screen" id="screen-settings">
     <div class="section-title"><h2>Game settings</h2></div>
-    <div class="card" style="margin-bottom:16px;">
-      <div style="font-size:12px;color:var(--sub);">
-        Your backend currently reads all of these from <code>.env</code> at server start
-        (see <code>ARCHITECTURE.md</code> §2 / <code>.env.example</code>) — there's no live
-        settings API yet. This form is a preview only; "Save" won't persist anything
-        until you add a settings endpoint (see BACKEND_TODO.md).
-      </div>
-    </div>
     <div class="grid2">
       <div class="card">
         <h4>Match rules</h4>
@@ -663,7 +815,7 @@
 
     <div class="save-bar">
       <span class="save-msg" id="settingsSavedMsg">✓ Settings saved</span>
-      <button type="button">SAVE SETTINGS</button>
+      <button class="btn-primary" onclick="saveSettings()">Save settings</button>
     </div>
   </div>
 
@@ -671,223 +823,7 @@
 </div>
 
 <script>
-/* =====================================================================
-   BACKEND INTEGRATION LAYER
-   =====================================================================
-   Everything below in this block is the ONLY place you need to touch to
-   wire this UI to your real backend. The rest of the file is unchanged
-   UI logic that now calls into `api.*` / listens to `bus` instead of
-   only mutating local variables.
-
-   HOW IT WORKS
-   - Every user action (start match, +1 goal, add player, etc.) calls an
-     `api.xxx()` function below. That function:
-       1. Fires the REST call to your backend.
-       2. If the call succeeds, does nothing else — the UI update comes
-          back over the WebSocket (see EVENTS below), so every screen /
-          tablet watching this page stays in sync with the referee.
-       3. If the call fails (no backend configured yet, offline, etc.)
-          it falls back to updating the local UI directly, so the
-          concept keeps working standalone for design/demo purposes.
-   - The WebSocket connection listens for pushed events and re-renders
-     the relevant part of the screen. This is what makes multiple
-     devices (referee tablet, scoreboard TV, spectator screen) agree.
-
-   WHAT YOU NEED TO BUILD ON THE BACKEND
-   Just fill in CONFIG below and implement these endpoints/events —
-   the field names below are exactly what this file sends and expects.
-   ===================================================================== */
-
-const CONFIG = {
-  // Same-origin by default — this file is meant to be served as your
-  // RoboSoccer server's dashboard (public/index.html on :8880), so REST
-  // calls just hit "/api/...". Only set this if you host the dashboard
-  // somewhere else, e.g. "http://192.168.1.50:8880".
-  API_BASE: "",
-  // WebSocket URL — auto-computed from the current page's host + /ws
-  // (matches ARCHITECTURE.md §5: "WebSocket clients connect to /ws").
-  // Override only if the dashboard is served from a different host than
-  // the API (rare — leave as-is for the normal same-origin setup).
-  WS_URL: (location.protocol === "https:" ? "wss://" : "ws://") + location.host + "/ws",
-};
-
-/* ---- REST endpoints — these match your server's ARCHITECTURE.md §5 exactly ----
-   GET    /api/status                                   -> { deviceCount, onlineCount, wsClients, ... }
-   GET    /api/devices                                  -> DeviceNode[]
-   PUT    /api/devices/:mac/team        {team}           -> updated DeviceNode  (team: "red"|"blue"|null)
-   PUT    /api/devices/:mac/node-type   {nodeType}        -> updated DeviceNode
-   PUT    /api/devices/:mac/label       {label}           -> updated DeviceNode
-   DELETE /api/devices/:mac                               -> {}
-   POST   /api/pairing        {controllerMac, truckMac}   -> {}
-   DELETE /api/pairing/:mac                               -> {}
-   GET    /api/match/state                                -> { devices: DeviceNode[], match: MatchState }
-   GET    /api/match/history                              -> MatchHistoryEntry[]
-   POST   /api/match/start    {playerRedName?, playerBlueName?} -> { devices, match }
-   POST   /api/match/pause                                -> { devices, match }
-   POST   /api/match/resume                               -> { devices, match }
-   POST   /api/match/reset                                -> { devices, match }
-   POST   /api/match/time     {deltaMs}                   -> { devices, match }
-   POST   /api/match/goal     {team}                      -> { devices, match }
-   POST   /api/match/undo                                 -> { devices, match }
-   POST   /api/powerups/kick  {mac}                       -> {} or WS powerup_rejected on failure
-   POST   /api/powerups/emp   {mac, targetTeam}            -> {} or WS powerup_rejected on failure
-
-   NOT YET IN YOUR BACKEND — this UI's Player roster + Match Queue screens
-   need these. See BACKEND_TODO.md (shared alongside this file) for the
-   exact spec to add to your server. Until you implement them, this file
-   falls back to local-only state so the screens stay usable:
-   GET    /api/players                                    -> Player[]
-   POST   /api/players        {name, team, controllerMac?, available} -> Player
-   PATCH  /api/players/:id    {available?, ...}            -> Player
-   DELETE /api/players/:id                                 -> {}
-   GET    /api/queue                                       -> QueueItem[]
-   POST   /api/queue          {redPlayerId, bluePlayerId}   -> QueueItem
-   PATCH  /api/queue/:id      {side, playerId}              -> QueueItem
-   DELETE /api/queue/:id                                    -> {}
-   POST   /api/queue/:id/start                              -> { devices, match }  (should call match/start internally)
-
-   WEBSOCKET (/ws) — exact shapes from ARCHITECTURE.md §5 (src/types.ts::ServerEvent):
-   { type:'state', devices: DeviceNode[], match: MatchState }
-   { type:'audio_event', event:'goal_red'|'goal_blue'|'kick_fired'|'emp_fired'|'intense_start'|'intense_end'|'match_start'|'match_end'|'warmup' }
-   { type:'light_event', pattern:'IDLE'|'WARMUP'|'GOAL_RED'|'GOAL_BLUE'|'INTENSE'|'EMP_FLASH'|'WINNER_RED'|'WINNER_BLUE'|'WINNER_DRAW', rgbHex? }
-   { type:'powerup_rejected', action:'kick'|'emp', mac, reason }
-   { type:'history', entries: MatchHistoryEntry[] }
-   Not yet in your backend (see BACKEND_TODO.md): { type:'players', players } / { type:'queue', queue }
-   ===================================================================== */
-
-async function apiCall(path, options = {}) {
-  const res = await fetch(CONFIG.API_BASE + path, {
-    method: options.method || "GET",
-    headers: { "Content-Type": "application/json" },
-    body: options.body ? JSON.stringify(options.body) : undefined,
-  });
-  if (!res.ok) throw new Error("API error " + res.status + " on " + path);
-  const text = await res.text();
-  return text ? JSON.parse(text) : null;
-}
-
-function normalizePlayer(raw) {
-  const p = raw?.player ?? raw;
-
-  return {
-    id: p.id,
-    name: p.name ?? '',
-    team: p.team ?? 'bench',
-    controller: p.controller ?? p.controllerMac ?? '—',
-    controllerMac: p.controllerMac ?? null,
-    matches: p.matches ?? 0,
-    wins: p.wins ?? 0,
-    available: p.available ?? true,
-    createdAt: p.createdAt
-  };
-}
-
-
-const api = { 
-  getStatus:       () => apiCall("/api/status"), 
-
-  // Settings
-getSettings:     () => apiCall("/api/settings"),
-
-saveSettings:    (settings) => apiCall("/api/settings", {
-  method: "PUT",
-  body: settings
-}),
-
-  getDevices:      () => apiCall("/api/devices"), 
-  setDeviceTeam:   (mac, team) => apiCall(`/api/devices/${mac}/team`, { method: "PUT", body: { team } }), 
-  setDeviceType:   (mac, nodeType) => apiCall(`/api/devices/${mac}/node-type`, { method: "PUT", body: { nodeType } }), 
-  setDeviceLabel:  (mac, label) => apiCall(`/api/devices/${mac}/label`, { method: "PUT", body: { label } }), 
-  deleteDevice:    (mac) => apiCall(`/api/devices/${mac}`, { method: "DELETE" }), 
-
-  pairDevices:     (controllerMac, truckMac) => apiCall("/api/pairing", { method: "POST", body: { controllerMac, truckMac } }), 
-  unpairDevice:    (mac) => apiCall(`/api/pairing/${mac}`, { method: "DELETE" }), 
-
-  getMatchState:   () => apiCall("/api/match/state"), 
-  getMatchHistory: () => apiCall("/api/match/history"), 
-  startMatch:      (playerRedName, playerBlueName) => apiCall("/api/match/start", { method: "POST", body: { playerRedName, playerBlueName } }), 
-  pauseMatch:      () => apiCall("/api/match/pause", { method: "POST" }), 
-  resumeMatch:     () => apiCall("/api/match/resume", { method: "POST" }), 
-  resetMatch:      () => apiCall("/api/match/reset", { method: "POST" }), 
-  adjustTime:      (deltaMs) => apiCall("/api/match/time", { method: "POST", body: { deltaMs } }), 
-  scoreGoal:       (team) => apiCall("/api/match/goal", { method: "POST", body: { team } }), 
-  undoGoal:        () => apiCall("/api/match/undo", { method: "POST" }), 
-
-  triggerKick:     (mac) => apiCall("/api/powerups/kick", { method: "POST", body: { mac } }), 
-  triggerEmp:      (mac, targetTeam) => apiCall("/api/powerups/emp", { method: "POST", body: { mac, targetTeam } }), 
-
-  getPlayers: async () => { 
-    const res = await apiCall("/api/players"); 
-    const list = Array.isArray(res) ? res : (res?.players ?? []); 
-    return list.map(normalizePlayer); 
-  }, 
-
-  addPlayer: async (player) => { 
-    const backendPlayer = { 
-      name: player.name, 
-      team: player.team === "bench" ? null : player.team, 
-      controllerMac: player.controllerMac ?? null 
-    }; 
-
-    const res = await apiCall("/api/players", { 
-      method: "POST", 
-      body: backendPlayer 
-    }); 
-
-    return normalizePlayer(res); 
-  }, 
-
-  updatePlayer: async (id, patch) => { 
-    const res = await apiCall(`/api/players/${id}`, { 
-      method: "PUT", 
-      body: patch 
-    }); 
-
-    return normalizePlayer(res); 
-  }, 
-
-  removePlayer: async (id) => { 
-    return apiCall(`/api/players/${id}`, { 
-      method: "DELETE" 
-    }); 
-  }, 
-
-  getQueue:        () => apiCall("/api/queue"), 
-  addToQueue:      (redPlayerId, bluePlayerId) => apiCall("/api/queue", { method: "POST", body: { redPlayerId, bluePlayerId } }), 
-  removeFromQueue: (id) => apiCall(`/api/queue/${id}`, { method: "DELETE" }), 
-  reassignQueue:   (id, side, playerId) => apiCall(`/api/queue/${id}`, { method: "PATCH", body: { side, playerId } }), 
-  startQueueMatch: (id) => apiCall(`/api/queue/${id}/start`, { method: "POST" }), 
-};
-
-/* Tiny pub/sub so WebSocket events and local fallback code can share renderers. */
-const bus = { handlers: {}, on(type, fn){ (this.handlers[type] ||= []).push(fn); }, emit(type, payload){ (this.handlers[type]||[]).forEach(fn=>fn(payload)); } };
-
-function setConnStatus(text, ok){
-  const el = document.getElementById('connStatus');
-  if(el) el.textContent = (ok ? '● ' : '○ ') + text;
-}
-
-let socket = null;
-function connectWebSocket(){
-  if(!CONFIG.WS_URL){ setConnStatus('No backend configured', false); return; }
-  socket = new WebSocket(CONFIG.WS_URL);
-  socket.onopen = () => setConnStatus('Arena online', true);
-  socket.onmessage = (evt) => {
-    try{
-      const msg = JSON.parse(evt.data);
-      // Real server sends flat { type, ...fields } messages (ARCHITECTURE.md §5),
-      // not a {type, payload} envelope — pass the whole message through.
-      bus.emit(msg.type, msg);
-    }catch(e){ console.error('Bad WS message', e); }
-  };
-  socket.onclose = () => { setConnStatus('Reconnecting…', false); setTimeout(connectWebSocket, 2000); };
-  socket.onerror = () => setConnStatus('Connection error', false);
-}
-connectWebSocket();
-
-/* =================== end backend integration layer =================== */
-
-let redScore = 0, blueScore = 0;
+let redScore = 3, blueScore = 3;
 function setTimer(el, text){ const parts = text.split(':'); el.innerHTML = parts[0]+'<span class="colon">:</span>'+parts[1]; }
 function showScreen(name, el){
   document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('active'));
@@ -947,16 +883,50 @@ function kickBallTo(direction, side){
     ballWrap.classList.remove('returning');
   }, 1400);
 }
-/* ===== REFEREE PANEL — the only control surface for the live match; every
-   value below starts blank/zero and is filled in by the backend at runtime. ===== */
-/* ===== REFEREE PANEL — the only control surface for the live match; every
-   value below starts blank/zero and is filled in by the real backend
-   (GET /api/match/state on load, then the WS `state` event forever after). ===== */
-let matchSeconds = 0;
+function setState(state, el){
+  document.querySelectorAll('.toolbar button').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  const arena = document.getElementById('arena');
+  arena.classList.remove('intense','goal','goal-red','goal-blue');
+  const dot = document.getElementById('statedot');
+  const label = document.getElementById('statelabel');
+  const matchstate = document.getElementById('matchstate');
+  const timer = document.getElementById('timer');
+  const goaltext = document.getElementById('goaltext');
+  const redEl = document.getElementById('redscore');
+  const blueEl = document.getElementById('bluescore');
+  dot.classList.remove('live'); matchstate.classList.remove('live');
+
+  if(state==='ready'){ label.textContent='Match ready'; matchstate.textContent='Match ready'; setTimer(timer,'15:00'); }
+  if(state==='live'){ dot.classList.add('live'); label.textContent='Match live'; matchstate.textContent='Match live'; matchstate.classList.add('live'); setTimer(timer,'08:12'); }
+  if(state==='intense'){ dot.classList.add('live'); label.textContent='Intense mode'; matchstate.textContent='Intense mode'; matchstate.classList.add('live'); setTimer(timer,'00:44'); arena.classList.add('intense'); }
+  if(state==='goalred'){
+    dot.classList.add('live'); label.textContent='Match live'; matchstate.textContent='Match live'; matchstate.classList.add('live');
+    goaltext.textContent='RED SCORES!'; arena.classList.add('goal','goal-red'); burstConfetti('#ff3b4e');
+    redScore++; redEl.textContent = String(redScore).padStart(2,'0'); redEl.classList.remove('pop'); void redEl.offsetWidth; redEl.classList.add('pop');
+    kickBallTo('right','red');
+  }
+  if(state==='goalblue'){
+    dot.classList.add('live'); label.textContent='Match live'; matchstate.textContent='Match live'; matchstate.classList.add('live');
+    goaltext.textContent='BLUE SCORES!'; arena.classList.add('goal','goal-blue'); burstConfetti('#2fb2ff');
+    blueScore++; blueEl.textContent = String(blueScore).padStart(2,'0'); blueEl.classList.remove('pop'); void blueEl.offsetWidth; blueEl.classList.add('pop');
+    kickBallTo('left','blue');
+  }
+  if(state==='ended'){
+    const winner = redScore>blueScore ? 'red' : (blueScore>redScore ? 'blue' : 'draw');
+    label.textContent='Match ended';
+    matchstate.textContent = winner==='draw' ? ('Match drawn '+redScore+' – '+blueScore)
+      : ((winner==='red'?'Red wins ':'Blue wins ')+redScore+' – '+blueScore);
+    setTimer(timer,'00:00');
+    recordMatchResult(winner);
+  }
+}
+/* ===== REFEREE PANEL — this is the real control surface for the live match ===== */
+let matchSeconds = 900;       // 15:00 default, matches Settings > Match duration
 let matchRunning = false;
 let matchHasEnded = false;
 let refTimerInterval = null;
-let latestDevices = [];   // most recent DeviceNode[] from the backend — drives Fleet/Pairing/power-up pills
+let goalLog = []; // for Undo last goal
 
 function fmtClock(sec){
   sec = Math.max(0, Math.round(sec));
@@ -970,328 +940,164 @@ function refSyncDisplay(){
 }
 function refSetStateLine(label){ document.getElementById('refStateLine').textContent = label; }
 
-/* Applies { devices, match } — the exact shape returned by GET /api/match/state
-   AND pushed by the WS `state` event (ARCHITECTURE.md §4/§5). This is the
-   single source of truth once the backend is reachable. */
-function applyServerState(s){
-  if(!s) return;
-  if(Array.isArray(s.devices)){
-    latestDevices = s.devices;
-    renderFleet(latestDevices);
-    renderPairing(latestDevices);
-    refreshPowerupPills(latestDevices);
-  }
-  const m = s.match;
-  if(!m) return;
-  redScore = m.scoreRed ?? 0;
-  blueScore = m.scoreBlue ?? 0;
-  matchSeconds = typeof m.timeRemainingMs === 'number' ? m.timeRemainingMs / 1000 : matchSeconds;
-  matchRunning = !!m.matchActive && !m.isPaused;
-  matchHasEnded = !m.matchActive && !!m.winner;
-  if(matchHasEnded && !previousMatchHasEnded) refreshHistoryOnMatchEnd();
-  previousMatchHasEnded = matchHasEnded;
-  document.getElementById('redscore').textContent = String(redScore).padStart(2,'0');
-  document.getElementById('bluescore').textContent = String(blueScore).padStart(2,'0');
-  document.getElementById('redPname').textContent = m.playerRedName || '—';
-  document.getElementById('bluePname').textContent = m.playerBlueName || '—';
-  document.getElementById('currentRedName').textContent = m.playerRedName || '—';
-  document.getElementById('currentBlueName').textContent = m.playerBlueName || '—';
-
-  const arena = document.getElementById('arena');
-  arena.classList.toggle('intense', !!m.isIntenseMode);
-
-  let label;
-  if(m.winner){
-    label = m.winner === 'draw' ? `Match drawn ${redScore} – ${blueScore}`
-      : `${m.winner === 'red' ? 'Red' : 'Blue'} wins ${redScore} – ${blueScore}`;
-  } else if(!m.matchActive){
-    label = 'Match ready';
-  } else if(m.isPaused){
-    label = 'Match paused';
-  } else if(m.isIntenseMode){
-    label = 'Intense mode';
-  } else {
-    label = 'Match live';
-  }
-  document.getElementById('statelabel').textContent = label;
-  document.getElementById('matchstate').textContent = label;
-  document.getElementById('statedot').classList.toggle('live', matchRunning);
-  document.getElementById('matchstate').classList.toggle('live', matchRunning);
-  refSetStateLine(label);
-  refSyncDisplay();
-
-  if(matchRunning) refRunInterval(); else clearInterval(refTimerInterval);
-}
-bus.on('state', applyServerState);
-
-/* audio_event drives goal animation/confetti + the ticker — the score itself
-   already came from the `state` event above, so this never touches redScore/blueScore. */
-bus.on('audio_event', (msg)=>{
-  const clock = fmtClock(matchSeconds);
-  switch(msg.event){
-    case 'goal_red':      playGoalAnimation('red');  pushTickerEvent({label:'GOAL — RED', detail: clock}); break;
-    case 'goal_blue':     playGoalAnimation('blue'); pushTickerEvent({label:'GOAL — BLUE', detail: clock}); break;
-    case 'kick_fired':    pushTickerEvent({label:'KICKER FIRED', detail: clock}); break;
-    case 'emp_fired':     pushTickerEvent({label:'EMP FIRED', detail: clock}); break;
-    case 'intense_start': pushTickerEvent({label:'MATCH ENTERED INTENSE MODE'}); break;
-    case 'intense_end':   pushTickerEvent({label:'INTENSE MODE ENDED'}); break;
-    case 'match_start':   pushTickerEvent({label:'MATCH STARTED'}); break;
-    case 'match_end':     pushTickerEvent({label:'MATCH ENDED'}); break;
-    case 'warmup':        pushTickerEvent({label:'WARMUP'}); break;
-  }
-});
-bus.on('powerup_rejected', (msg)=>{
-  pushTickerEvent({label:(msg.action==='kick'?'KICKER':'EMP')+' REJECTED', detail: msg.reason || ''});
-});
-bus.on('history', (msg)=>{ if(Array.isArray(msg.entries)){ matchHistory = msg.entries; renderHistory(); } });
-/* Not yet in your backend — see BACKEND_TODO.md. Wire these up once you add
-   the corresponding WS pushes so every connected dashboard stays in sync. */
-bus.on('players', (msg)=>{ if(Array.isArray(msg.players)){ players = msg.players; renderPlayers(); } });
-bus.on('queue', (msg)=>{ if(Array.isArray(msg.queue)){ matchQueue = msg.queue; renderQueue(); } });
-
-/* Goal flash / confetti / ball-kick animation only — no score mutation here,
-   the `state` event already updated redScore/blueScore. */
-function playGoalAnimation(side){
-  const arena = document.getElementById('arena');
-  arena.classList.remove('goal','goal-red','goal-blue');
-  void arena.offsetWidth;
-  const goaltext = document.getElementById('goaltext');
-  const scoreEl = document.getElementById(side === 'red' ? 'redscore' : 'bluescore');
-  scoreEl.classList.remove('pop'); void scoreEl.offsetWidth; scoreEl.classList.add('pop');
-  if(side === 'red'){
-    goaltext.textContent = 'RED SCORES!'; arena.classList.add('goal','goal-red'); burstConfetti('#ff3b4e'); kickBallTo('right','red');
-  } else {
-    goaltext.textContent = 'BLUE SCORES!'; arena.classList.add('goal','goal-blue'); burstConfetti('#2fb2ff'); kickBallTo('left','blue');
-  }
-  setTimeout(()=>arena.classList.remove('goal','goal-red','goal-blue'), 1500);
-}
-
-/* ----- Fleet / Pairing: rendered straight from DeviceNode[] — no separate endpoint ----- */
-function emptyState(msg){ return `<div style="font-size:12px;color:var(--sub);padding:6px 0;">${msg}</div>`; }
-function shortMac(mac){ return mac ? mac.slice(-8) : '—'; }
-
-function renderFleet(devices){
-  const controllersEl = document.getElementById('fleetControllers');
-  const trucksEl = document.getElementById('fleetTrucks');
-  const lightingEl = document.getElementById('fleetLighting');
-  if(!devices || !devices.length){
-    if(controllersEl) controllersEl.innerHTML = emptyState('No controllers have connected yet.');
-    if(trucksEl) trucksEl.innerHTML = emptyState('No trucks have connected yet.');
-    if(lightingEl) lightingEl.innerHTML = emptyState('No lighting rig has connected yet.');
-    document.getElementById('connDevices').textContent = '—';
-    return;
-  }
-  const row = (d) => {
-    const name = d.label || (d.team ? d.team.toUpperCase()+' · ' : '') + shortMac(d.mac);
-    const meta = [d.team ? d.team : null, d.batteryPct != null ? d.batteryPct+'%' : null, d.mac].filter(Boolean).join(' · ');
-    return `<div class="device"><div><div class="name">${name}</div><div class="meta">${meta}</div></div><span class="${d.isOnline?'stat-online':'stat-offline'}">${d.isOnline?'Online':'Offline'}</span></div>`;
-  };
-  const controllers = devices.filter(d=>d.nodeType==='controller');
-  const trucks = devices.filter(d=>d.nodeType==='truck');
-  const lighting = devices.filter(d=>d.nodeType==='lighting');
-  if(controllersEl) controllersEl.innerHTML = controllers.map(row).join('') || emptyState('No controllers have connected yet.');
-  if(trucksEl) trucksEl.innerHTML = trucks.map(row).join('') || emptyState('No trucks have connected yet.');
-  if(lightingEl) lightingEl.innerHTML = lighting.map(row).join('') || emptyState('No lighting rig has connected yet.');
-  const onlineCount = devices.filter(d=>d.isOnline).length;
-  document.getElementById('connDevices').textContent = `${onlineCount}/${devices.length} devices`;
-  setConnStatus(onlineCount > 0 ? 'Arena online' : 'No devices online', onlineCount > 0);
-}
-
-function renderPairing(devices){
-  const el = document.getElementById('pairingList');
-  if(!el) return;
-  const controllers = devices.filter(d=>d.nodeType==='controller');
-  if(!controllers.length){ el.innerHTML = emptyState('No controllers have connected yet.'); return; }
-  el.innerHTML = controllers.map(c=>{
-    const truck = c.pairedMac ? devices.find(d=>d.mac===c.pairedMac) : null;
-    const cName = c.label || (c.team?c.team.toUpperCase()+' · ':'')+shortMac(c.mac);
-    const tName = truck ? (truck.label || 'Truck · '+shortMac(truck.mac)) : '—';
-    return `<div class="pair-chain"><div class="node">${cName}</div><div class="arrow">→</div>
-      <div class="node">${tName}</div>
-      <span class="${truck?'stat-online':'stat-offline'}">${truck?'Linked':'Not paired'}</span></div>`;
-  }).join('');
-}
-
-/* Power-up pills on the scoreboard: purely a live read of DeviceNode state
-   (kickerCooldownUntil / powerupEmpReady) for whichever controller is
-   currently assigned to each team — never a locally simulated timer. */
-function refreshPowerupPills(devices){
-  const now = Date.now();
-  ['red','blue'].forEach(side=>{
-    const controller = devices.find(d=>d.nodeType==='controller' && d.team===side);
-    const kickerEl = document.getElementById(side+'kicker');
-    const empEl = document.getElementById(side+'emp');
-    if(!controller){
-      kickerEl.textContent = 'Kicker · No controller'; kickerEl.classList.remove('ready');
-      empEl.textContent = 'EMP · No controller'; empEl.classList.remove('ready');
-      return;
-    }
-    const kickerReady = !controller.kickerCooldownUntil || controller.kickerCooldownUntil <= now;
-    kickerEl.classList.toggle('ready', kickerReady);
-    kickerEl.textContent = kickerReady ? 'Kicker · Ready' : 'Kicker · ' + Math.ceil((controller.kickerCooldownUntil - now)/1000) + 's';
-    empEl.classList.toggle('ready', !!controller.powerupEmpReady);
-    empEl.textContent = 'EMP · ' + (controller.powerupEmpReady ? 'Ready' : 'Not unlocked');
-  });
-}
-setInterval(()=>{ if(latestDevices.length) refreshPowerupPills(latestDevices); }, 1000);
-
-function refTriggerKick(side){
-  const controller = latestDevices.find(d=>d.nodeType==='controller' && d.team===side);
-  if(!controller){ pushTickerEvent({label:'KICK FAILED', detail:'No controller assigned to '+side}); return; }
-  api.triggerKick(controller.mac).catch(err=>pushTickerEvent({label:'KICK FAILED', detail: err.message}));
-}
-function refTriggerEmp(side){
-  const controller = latestDevices.find(d=>d.nodeType==='controller' && d.team===side);
-  if(!controller){ pushTickerEvent({label:'EMP FAILED', detail:'No controller assigned to '+side}); return; }
-  const targetTeam = side === 'red' ? 'blue' : 'red';
-  api.triggerEmp(controller.mac, targetTeam).catch(err=>pushTickerEvent({label:'EMP FAILED', detail: err.message}));
-}
-
-/* ----- Audio screen: your backend has Spotify OAuth (§5) but no live status
-   endpoint yet, so this is honest about what's actually knowable right now
-   rather than showing a fake "connected" track. ----- */
-function renderAudio(){
-  const playbackEl = document.getElementById('audioPlayback');
-  const soundsEl = document.getElementById('audioEventSounds');
-  if(playbackEl){
-    playbackEl.innerHTML = `
-      <div style="font-size:12px;color:var(--sub);margin-bottom:10px;">
-        Spotify ducking is handled server-side (OAuth, safe no-op if unconfigured).
-        There's no live "now playing" endpoint yet — see BACKEND_TODO.md if you want one.
-      </div>
-      <a class="btn-primary" style="display:inline-block;text-decoration:none;" href="/auth/spotify/login">Connect Spotify</a>`;
-  }
-  if(soundsEl){
-    soundsEl.innerHTML = emptyState('Event sounds play from the built-in Web Audio synth on audio_event / light_event — no per-sound toggle exists in the API yet.');
-  }
-}
-
-/* ----- Live ticker: local event log, seeded empty; filled from audio_event /
-   powerup_rejected messages above as they actually happen. ----- */
-let tickerEvents = [];
-function pushTickerEvent(entry){
-  tickerEvents.unshift(entry);
-  tickerEvents = tickerEvents.slice(0, 8);
-  renderTicker();
-}
-function renderTicker(){
-  const el = document.getElementById('ticker');
-  if(!el) return;
-  if(!tickerEvents.length){
-    el.innerHTML = '<span id="tickerEmpty" style="color:var(--sub);">No events yet — actions will appear here as they happen.</span>';
-    return;
-  }
-  el.innerHTML = tickerEvents.map(e => `<span><b>${e.label}</b>${e.detail ? ' · '+e.detail : ''}</span>`).join('');
-}
-
-/* Load initial state from the backend on page load. Match/devices come from
-   your real API; players/queue/history fail gracefully (with a ticker note)
-   until BACKEND_TODO.md is implemented. */
-
-   async function bootstrapFromBackend() {
-  try {
-
-    // 1. Load players FIRST
-    try {
-      const p = await api.getPlayers();
-
-      players = Array.isArray(p)
-        ? p
-        : [];
-
-      renderPlayers();
-
-    } catch (err) {
-      console.error("Failed to load players:", err);
-      players = [];
-    }
-
-
-    // 2. Load queue
-    try {
-      const q = await api.getQueue();
-
-      if (Array.isArray(q)) {
-        matchQueue = q;
-
-      } else if (q && Array.isArray(q.queue)) {
-        matchQueue = q.queue;
-
-      } else {
-        matchQueue = [];
-      }
-
-      renderQueue();
-
-    } catch (err) {
-      console.error("Failed to load queue:", err);
-      matchQueue = [];
-      renderQueue();
-    }
-
-  } catch (err) {
-    console.error("Backend bootstrap failed:", err);
-  }
-}
-
 function refStart(){
   if(matchRunning || matchHasEnded) return;
-  const redName = document.getElementById('redPname').textContent.trim();
-  const blueName = document.getElementById('bluePname').textContent.trim();
-  api.startMatch(redName && redName !== '—' ? redName : undefined, blueName && blueName !== '—' ? blueName : undefined)
-    .then(applyServerState)
-    .catch(err => pushTickerEvent({label:'START FAILED', detail: err.message}));
+  matchRunning = true;
+  document.getElementById('statedot').classList.add('live');
+  document.getElementById('statelabel').textContent = 'Match live';
+  document.getElementById('matchstate').textContent = 'Match live';
+  document.getElementById('matchstate').classList.add('live');
+  refSetStateLine('Match live');
+  refRunInterval();
 }
 function refPause(){
   if(!matchRunning) return;
-  api.pauseMatch().then(applyServerState).catch(err => pushTickerEvent({label:'PAUSE FAILED', detail: err.message}));
+  matchRunning = false;
+  clearInterval(refTimerInterval);
+  document.getElementById('statelabel').textContent = 'Match paused';
+  document.getElementById('matchstate').textContent = 'Match paused';
+  refSetStateLine('Match paused');
 }
 function refResume(){
   if(matchRunning || matchHasEnded) return;
-  api.resumeMatch().then(applyServerState).catch(err => pushTickerEvent({label:'RESUME FAILED', detail: err.message}));
+  matchRunning = true;
+  document.getElementById('statelabel').textContent = 'Match live';
+  document.getElementById('matchstate').textContent = 'Match live';
+  document.getElementById('matchstate').classList.add('live');
+  refSetStateLine('Match live');
+  refRunInterval();
 }
-/* This client-side ticking is display-only, smoothing the seconds between WS
-   `state` pushes — the backend's own 1s tick (ARCHITECTURE.md §4) is what
-   actually owns timeRemainingMs, so this never fires refEndMatch itself;
-   match end/winner comes from the server via applyServerState. */
 function refRunInterval(){
   clearInterval(refTimerInterval);
   refTimerInterval = setInterval(()=>{
     if(!matchRunning) return;
-    matchSeconds = Math.max(0, matchSeconds - 1);
+    matchSeconds--;
+    const arena = document.getElementById('arena');
+    if(matchSeconds<=60 && matchSeconds>0){
+      arena.classList.add('intense');
+      document.getElementById('statelabel').textContent = 'Intense mode';
+      document.getElementById('matchstate').textContent = 'Intense mode';
+      refSetStateLine('Intense mode');
+    }
+    if(matchSeconds<=0){ matchSeconds = 0; refSyncDisplay(); refEndMatch(); return; }
     refSyncDisplay();
   }, 1000);
 }
 function refReset(){
   if(!confirm('Reset match? This clears the score, timer and power-up cooldowns.')) return;
-  api.resetMatch().then(applyServerState).catch(err => pushTickerEvent({label:'RESET FAILED', detail: err.message}));
+  clearInterval(refTimerInterval);
+  matchRunning = false; matchHasEnded = false; goalLog = [];
+  redScore = 0; blueScore = 0; matchSeconds = 900;
+  document.getElementById('redscore').textContent = '00';
+  document.getElementById('bluescore').textContent = '00';
+  const arena = document.getElementById('arena');
+  arena.classList.remove('intense','goal','goal-red','goal-blue');
+  document.getElementById('statedot').classList.remove('live');
+  document.getElementById('statelabel').textContent = 'Match ready';
+  document.getElementById('matchstate').textContent = 'Match ready';
+  document.getElementById('matchstate').classList.remove('live');
+  refSetStateLine('Match ready');
+  refResetPowerups();
+  refSyncDisplay();
 }
 function refGoal(side){
-  api.scoreGoal(side).catch(err => pushTickerEvent({label:'GOAL FAILED', detail: err.message}));
-  // no local score mutation — the WS `state` event updates redScore/blueScore,
-  // and the WS `audio_event` (goal_red/goal_blue) triggers the animation.
+  const arena = document.getElementById('arena');
+  arena.classList.remove('goal','goal-red','goal-blue');
+  void arena.offsetWidth;
+  const goaltext = document.getElementById('goaltext');
+  if(side==='red'){
+    redScore++;
+    const el = document.getElementById('redscore');
+    el.textContent = String(redScore).padStart(2,'0'); el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop');
+    goaltext.textContent = 'RED SCORES!'; arena.classList.add('goal','goal-red'); burstConfetti('#ff3b4e'); kickBallTo('right','red');
+  } else {
+    blueScore++;
+    const el = document.getElementById('bluescore');
+    el.textContent = String(blueScore).padStart(2,'0'); el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop');
+    goaltext.textContent = 'BLUE SCORES!'; arena.classList.add('goal','goal-blue'); burstConfetti('#2fb2ff'); kickBallTo('left','blue');
+  }
+  goalLog.push(side);
+  refSyncDisplay();
+  setTimeout(()=>arena.classList.remove('goal','goal-red','goal-blue'), 1500);
 }
 function refUndoGoal(){
-  api.undoGoal().then(applyServerState).catch(err => pushTickerEvent({label:'UNDO FAILED', detail: err.message}));
+  const last = goalLog.pop();
+  if(!last) return;
+  if(last==='red' && redScore>0){ redScore--; document.getElementById('redscore').textContent = String(redScore).padStart(2,'0'); }
+  if(last==='blue' && blueScore>0){ blueScore--; document.getElementById('bluescore').textContent = String(blueScore).padStart(2,'0'); }
+  refSyncDisplay();
 }
-function refAdjustTimer(deltaMs){
-  api.adjustTime(deltaMs).then(applyServerState).catch(err => pushTickerEvent({label:'TIMER ADJUST FAILED', detail: err.message}));
+function refAdjustTimer(delta){
+  matchSeconds = Math.max(0, matchSeconds + delta);
+  refSyncDisplay();
+}
+function refEndMatch(){
+  matchRunning = false; matchHasEnded = true;
+  clearInterval(refTimerInterval);
+  const winner = redScore>blueScore ? 'red' : (blueScore>redScore ? 'blue' : 'draw');
+  document.getElementById('statelabel').textContent = 'Match ended';
+  document.getElementById('matchstate').textContent = winner==='draw' ? ('Match drawn '+redScore+' – '+blueScore)
+    : ((winner==='red'?'Red wins ':'Blue wins ')+redScore+' – '+blueScore);
+  document.getElementById('matchstate').classList.remove('live');
+  document.getElementById('statedot').classList.remove('live');
+  refSetStateLine('Match ended');
+  recordMatchResult(winner);
+}
+
+/* power-ups: red/blue each have their own Kicker + EMP with independent cooldowns */
+const refPwCooldownTimers = {};
+function refTriggerPower(pwId, cooldownSec){
+  const el = document.getElementById(pwId);
+  const btn = document.getElementById('btn'+pwId.charAt(0).toUpperCase()+pwId.slice(1).replace('kicker','Kicker').replace('emp','Emp'));
+  if(!el || !el.classList.contains('ready')) return;
+  const label = pwId.includes('kicker') ? 'Kicker' : 'EMP';
+  el.classList.remove('ready');
+  el.textContent = label+' · Cooldown';
+  if(pwId==='redkicker') triggerTruckKick('red');
+  if(pwId==='bluekicker') triggerTruckKick('blue');
+  const btnEl = document.querySelector(`[onclick*="refTriggerPower('${pwId}'"]`);
+  if(btnEl) btnEl.disabled = true;
+  clearTimeout(refPwCooldownTimers[pwId]);
+  refPwCooldownTimers[pwId] = setTimeout(()=>{
+    el.classList.add('ready');
+    el.textContent = label+' · Ready';
+    if(btnEl) btnEl.disabled = false;
+  }, cooldownSec*1000);
+}
+function refResetPowerups(){
+  ['redkicker','redemp','bluekicker','blueemp'].forEach(pwId=>{
+    clearTimeout(refPwCooldownTimers[pwId]);
+    const el = document.getElementById(pwId);
+    if(!el) return;
+    const label = pwId.includes('kicker') ? 'Kicker' : 'EMP';
+    el.classList.add('ready');
+    el.textContent = label+' · Ready';
+    const btnEl = document.querySelector(`[onclick*="refTriggerPower('${pwId}'"]`);
+    if(btnEl) btnEl.disabled = false;
+  });
 }
 
 /* ===== PLAYERS: roster, availability, matchmaking (in-memory demo) ===== */
-/* No sample/demo data seeded here on purpose — everything below starts empty
-   and is populated entirely from the backend via bootstrapFromBackend() and
-   the WebSocket events wired up in the integration layer above. */
-let players = [];
-let playerIdCounter = 1;   // only used as a fallback id if a POST /players call fails
+let players = [
+  {id:1, name:'Satyajeet', team:'red',  controller:'Controller 1 · Red',  matches:12, wins:8, available:true},
+  {id:2, name:'Arjun',     team:'blue', controller:'Controller 2 · Blue', matches:10, wins:5, available:true},
+  {id:3, name:'Rohan',     team:'bench',controller:'—',                  matches:4,  wins:1, available:true},
+  {id:4, name:'Kabir',     team:'bench',controller:'—',                  matches:6,  wins:4, available:false},
+];
+let playerIdCounter = 5;
 
-let matchQueue = [];
-let queueIdCounter = 1;    // fallback id if a POST /queue call fails
+let matchQueue = [
+  {id:1, redId:3, blueId:4, issue:null},
+];
+let queueIdCounter = 2;
 
-let currentMatch = {redId:null, blueId:null};
+let currentMatch = {redId:1, blueId:2};
 
-let matchHistory = [];
-let matchCounter = 1;      // fallback match number if the backend doesn't return one
+let matchHistory = [
+  {matchNum:27, date:'Aug 25, 9:40 PM', redName:'Satyajeet', blueName:'Arjun', redScore:5, blueScore:3, winner:'red'},
+  {matchNum:26, date:'Aug 25, 9:10 PM', redName:'Rohan',     blueName:'Kabir', redScore:1, blueScore:4, winner:'blue'},
+];
+let matchCounter = 28;
 
 function renderPlayers(){
   const tbody = document.getElementById('playersBody');
@@ -1304,9 +1110,9 @@ function renderPlayers(){
       <td>${p.matches}</td>
       <td>${p.wins}</td>
       <td>
-        <div class="switch status-switch ${p.available?'on':''}" onclick="togglePlayerAvailable('${p.id}')" title="${p.available?'Available':'Unavailable'}"><div class="knob"></div></div>
+        <div class="switch status-switch ${p.available?'on':''}" onclick="togglePlayerAvailable(${p.id})" title="${p.available?'Available':'Unavailable'}"><div class="knob"></div></div>
       </td>
-      <td><button class="icon-btn" onclick="removePlayer('${p.id}')">✕ Remove</button></td>
+      <td><button class="icon-btn" onclick="removePlayer(${p.id})">✕ Remove</button></td>
     </tr>`).join('');
   renderPlayerSelects();
   renderCurrentMatchBanner();
@@ -1315,7 +1121,6 @@ function renderPlayers(){
 function togglePlayerAvailable(id){
   const p = players.find(p=>p.id===id);
   if(p) p.available = !p.available;
-  api.updatePlayer(id, {available: p ? p.available : undefined}).catch(()=>{});
   renderPlayers();
   renderQueue();
 }
@@ -1327,19 +1132,13 @@ function addPlayer(){
   const availEl = document.getElementById('newPlayerAvailable');
   const name = nameEl.value.trim();
   if(!name){ nameEl.focus(); return; }
-  const newPlayer = {name, team:teamEl.value, controller:ctrlEl.value, matches:0, wins:0,
-    available: availEl.classList.contains('on')};
-  api.addPlayer(newPlayer).then(created=>{
-    players.push(created); renderPlayers();
-  }).catch(()=>{
-    players.push({id:playerIdCounter++, ...newPlayer});
-    renderPlayers();
-  });
+  players.push({id:playerIdCounter++, name, team:teamEl.value, controller:ctrlEl.value, matches:0, wins:0,
+    available: availEl.classList.contains('on')});
   nameEl.value = '';
+  renderPlayers();
 }
 
 function removePlayer(id){
-  api.removePlayer(id).catch(()=>{});
   players = players.filter(p=>p.id!==id);
   matchQueue.forEach(q=>{
     if(q.redId===id) q.issue='red';
@@ -1350,56 +1149,17 @@ function removePlayer(id){
 }
 
 /* ---- next-match setup: only available players show up here ---- */
-function renderPlayerSelects() {
+function renderPlayerSelects(){
   const redSel = document.getElementById('matchRedPlayer');
   const blueSel = document.getElementById('matchBluePlayer');
-
-  if (!redSel || !blueSel) return;
-
-  const prevRed = redSel.value;
-  const prevBlue = blueSel.value;
-
-  const avail = players.filter(p => p.available);
-
-  const redPlayers = avail.filter(p => p.team === 'red');
-  const bluePlayers = avail.filter(p => p.team === 'blue');
-
-  const redOpts = redPlayers
-    .map(p =>
-      `<option value="${p.id}">${p.name} · red</option>`
-    )
-    .join('');
-
-  const blueOpts = bluePlayers
-    .map(p =>
-      `<option value="${p.id}">${p.name} · blue</option>`
-    )
-    .join('');
-
-  redSel.innerHTML = redOpts;
-  blueSel.innerHTML = blueOpts;
-
-  // Preserve previous selection if that player still exists.
-  if (redPlayers.some(p => String(p.id) === String(prevRed))) {
-    redSel.value = prevRed;
-  } else if (redPlayers.length > 0) {
-    redSel.value = redPlayers[0].id;
-  }
-
-  if (bluePlayers.some(p => String(p.id) === String(prevBlue))) {
-    blueSel.value = prevBlue;
-  } else if (bluePlayers.length > 0) {
-    blueSel.value = bluePlayers[0].id;
-  }
-
-  const warning = document.getElementById('setupWarning');
-
-  if (warning) {
-    warning.style.display =
-      redPlayers.length === 0 || bluePlayers.length === 0
-        ? 'block'
-        : 'none';
-  }
+  if(!redSel || !blueSel) return;
+  const prevRed = redSel.value, prevBlue = blueSel.value;
+  const avail = players.filter(p=>p.available);
+  const opts = avail.map(p=>`<option value="${p.id}">${p.name}${p.team!=='bench' ? ' · '+p.team : ''}</option>`).join('');
+  redSel.innerHTML = opts; blueSel.innerHTML = opts;
+  if(avail.some(p=>String(p.id)===prevRed)) redSel.value = prevRed;
+  if(avail.some(p=>String(p.id)===prevBlue)) blueSel.value = prevBlue;
+  document.getElementById('setupWarning').style.display = avail.length<2 ? 'block' : 'none';
 }
 
 function renderCurrentMatchBanner(){
@@ -1415,31 +1175,15 @@ function renderCurrentMatchBanner(){
 function applyMatch(redId, blueId){
   currentMatch = {redId, blueId};
   const redP = players.find(p=>p.id===redId);
-  const bluePlayer = players.find(p=>p.id===blueId);
+  const blueP = players.find(p=>p.id===blueId);
   document.querySelector('.truckside.red .pname').textContent = redP ? redP.name : 'Red';
-  document.querySelector('.truckside.blue .pname').textContent = bluePlayer ? bluePlayer.name : 'Blue';
+  document.querySelector('.truckside.blue .pname').textContent = blueP ? blueP.name : 'Blue';
+  redScore = 0; blueScore = 0;
+  document.getElementById('redscore').textContent = '00';
+  document.getElementById('bluescore').textContent = '00';
   renderCurrentMatchBanner();
   showScreen('live', document.getElementById('navLiveBtn'));
-  resetLiveDisplayToReady();
-  api.startMatch(redP ? redP.name : undefined, bluePlayer ? bluePlayer.name : undefined)
-    .then(applyServerState)
-    .catch(err => pushTickerEvent({label:'START FAILED', detail: err.message}));
-}
-
-/* Resets the live screen visuals to "Match ready" without touching the
-   removed design-preview toolbar (deleted — the referee panel is the only
-   control surface now). */
-function resetLiveDisplayToReady(){
-  const arena = document.getElementById('arena');
-  arena.classList.remove('intense','goal','goal-red','goal-blue');
-  document.getElementById('statedot').classList.remove('live');
-  document.getElementById('statelabel').textContent = 'Match ready';
-  document.getElementById('matchstate').textContent = 'Match ready';
-  document.getElementById('matchstate').classList.remove('live');
-  refSetStateLine('Match ready');
-  matchRunning = false; matchHasEnded = false;
-  clearInterval(refTimerInterval);
-  refSyncDisplay();
+  setState('ready', document.getElementById('toolbarReadyBtn'));
 }
 
 function startMatchNow(){
@@ -1457,456 +1201,901 @@ function startMatchNow(){
 }
 
 /* ---- match queue: plan next matches, swap in a substitute if someone is unavailable ---- */
-function addToQueue() {
+function addToQueue(){
   const redSel = document.getElementById('matchRedPlayer');
   const blueSel = document.getElementById('matchBluePlayer');
-
-  if (
-    !redSel.value ||
-    !blueSel.value ||
-    redSel.value === blueSel.value
-  ) {
-    return;
-  }
-
-  const redId = redSel.value;
-  const blueId = blueSel.value;
-
-  api.addToQueue(redId, blueId)
-    .then(item => {
-
-      // Backend may return { ... } or { queue: [...] }
-      const queueItem = item?.queue
-        ? item.queue[item.queue.length - 1]
-        : item;
-
-      if (queueItem) {
-        matchQueue.push(queueItem);
-        renderQueue();
-      }
-
-    })
-    .catch(err => {
-      console.error("Queue add failed:", err);
-    });
+  if(!redSel.value || !blueSel.value || redSel.value===blueSel.value) return;
+  matchQueue.push({id:queueIdCounter++, redId:Number(redSel.value), blueId:Number(blueSel.value), issue:null});
+  renderQueue();
 }
 
-function renderQueue() {
+function renderQueue(){
   const box = document.getElementById('queueList');
   const empty = document.getElementById('queueEmpty');
-
-  if (!box) return;
-
-  if (!matchQueue.length) {
-    box.innerHTML = '';
-    if (empty) empty.style.display = 'block';
-    return;
-  }
-
-  if (empty) empty.style.display = 'none';
-
-  box.innerHTML = matchQueue.map(q => {
-
-    // Support backend field names
-    const redId = q.playerRedId ?? q.redId;
-    const blueId = q.playerBlueId ?? q.blueId;
-
-    // IDs are UUID strings, so ALWAYS compare as strings
-    const redP = players.find(
-      p => String(p.id) === String(redId)
-    );
-
-    const blueP = players.find(
-      p => String(p.id) === String(blueId)
-    );
-
+  if(!box) return;
+  if(matchQueue.length===0){ box.innerHTML=''; empty.style.display='block'; return; }
+  empty.style.display='none';
+  box.innerHTML = matchQueue.map(q=>{
+    const redP = players.find(p=>p.id===q.redId);
+    const blueP = players.find(p=>p.id===q.blueId);
     let issue = null;
-
-    if (!redP || !redP.available) {
-      issue = 'red';
-    } else if (!blueP || !blueP.available) {
-      issue = 'blue';
-    }
-
+    if(!redP || !redP.available) issue = 'red';
+    else if(!blueP || !blueP.available) issue = 'blue';
     q.issue = issue;
-
-    const subOptions = players
-      .filter(p =>
-        p.available &&
-        String(p.id) !== String(redId) &&
-        String(p.id) !== String(blueId)
-      )
-      .map(p =>
-        `<option value="${p.id}">${p.name}</option>`
-      )
-      .join('');
-
+    const subOptions = players.filter(p=>p.available && p.id!==q.redId && p.id!==q.blueId)
+      .map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
     return `
-      <div class="queue-row">
-
-        <div class="queue-names">
-          <span class="r">
-            ${redP ? redP.name : 'Removed player'}
-          </span>
-
-          <span class="vs"> vs </span>
-
-          <span class="b">
-            ${blueP ? blueP.name : 'Removed player'}
-          </span>
-        </div>
-
-        <div class="queue-actions">
-          <button
-            class="btn small"
-            onclick="startQueueMatch('${q.id}')">
-            ▶ Start
-          </button>
-
-          <button
-            class="icon-btn"
-            onclick="removeFromQueue('${q.id}')">
-            ✕ Remove
-          </button>
-        </div>
-
-        ${issue ? `
-          <div class="queue-warn">
-
-            ⚠ ${
-              issue === 'red'
-                ? (redP ? redP.name : 'Red player')
-                : (blueP ? blueP.name : 'Blue player')
-            }
-
-            is not available right now — pick a replacement:
-
-            <select id="sub-${q.id}">
-              ${
-                subOptions ||
-                '<option value="">No one else available</option>'
-              }
-            </select>
-
-            <button
-              class="btn small"
-              onclick="reassignQueueSlot('${q.id}','${issue}')">
-              Confirm swap
-            </button>
-
-          </div>
-        ` : ''}
-
+    <div class="queue-row">
+      <div class="queue-names">
+        <span class="r">${redP ? redP.name : 'Removed player'}</span>
+        <span class="vs"> vs </span>
+        <span class="b">${blueP ? blueP.name : 'Removed player'}</span>
       </div>
-    `;
+      <div class="queue-actions">
+        <button class="btn small" onclick="startQueueMatch(${q.id})">▶ Start</button>
+        <button class="icon-btn" onclick="removeFromQueue(${q.id})">✕ Remove</button>
+      </div>
+      ${issue ? `
+      <div class="queue-warn">
+        ⚠ ${issue==='red' ? (redP?redP.name:'Red player') : (blueP?blueP.name:'Blue player')} is not available right now — pick a replacement:
+        <select id="sub-${q.id}">${subOptions || '<option value="">No one else available</option>'}</select>
+        <button class="btn small" onclick="reassignQueueSlot(${q.id},'${issue}')">Confirm swap</button>
+      </div>` : ''}
+    </div>`;
   }).join('');
 }
 
-async function removeFromQueue(id) {
-  try {
-    console.log("[queue] removing:", id);
-
-    const response = await api.removeFromQueue(id);
-
-    console.log("[queue] removed successfully:", response);
-
-    matchQueue = matchQueue.filter(q => q.id !== id);
-
-    renderQueue();
-
-  } catch (error) {
-    console.error("[queue] remove failed:", error);
-
-    alert("Failed to remove queue item. Check the server.");
-  }
+function removeFromQueue(id){
+  matchQueue = matchQueue.filter(q=>q.id!==id);
+  renderQueue();
 }
 
 function reassignQueueSlot(qid, side){
   const item = matchQueue.find(q=>q.id===qid);
   const subSel = document.getElementById('sub-'+qid);
   if(!item || !subSel || !subSel.value) return;
-  const playerId = Number(subSel.value);
-  api.reassignQueue(qid, side, playerId).catch(()=>{});
-  if(side==='red') item.redId = playerId; else item.blueId = playerId;
+  if(side==='red') item.redId = Number(subSel.value); else item.blueId = Number(subSel.value);
   item.issue = null;
   renderQueue();
 }
 
-function startQueueMatch(id) {
-
-  const item = matchQueue.find(
-    q => String(q.id) === String(id)
-  );
-
-  if (!item) return;
-
-  const redId = item.playerRedId ?? item.redId;
-  const blueId = item.playerBlueId ?? item.blueId;
-
-  const redP = players.find(
-    p => String(p.id) === String(redId)
-  );
-
-  const blueP = players.find(
-    p => String(p.id) === String(blueId)
-  );
-
-  if (!redP || !redP.available || !blueP || !blueP.available) {
-    renderQueue();
-    return;
-  }
-
-  api.startQueueMatch(id)
-    .then(() => {
-      matchQueue = matchQueue.filter(
-        q => String(q.id) !== String(id)
-      );
-
-      renderQueue();
-
-      applyMatch(redP.id, blueP.id);
-    })
-    .catch(err => {
-      console.error("Failed to start queued match:", err);
-    });
+function startQueueMatch(qid){
+  const item = matchQueue.find(q=>q.id===qid);
+  if(!item) return;
+  const redP = players.find(p=>p.id===item.redId);
+  const blueP = players.find(p=>p.id===item.blueId);
+  if(!redP || !redP.available || !blueP || !blueP.available){ renderQueue(); return; }
+  applyMatch(item.redId, item.blueId);
+  matchQueue = matchQueue.filter(q=>q.id!==qid);
+  renderQueue();
 }
 
-let previousMatchHasEnded = false;
-/* Called from applyServerState whenever the match transitions to "ended" —
-   pulls the authoritative ledger from the backend rather than fabricating a
-   local history entry, since GET /api/match/history is the real source of truth. */
-function refreshHistoryOnMatchEnd(){
-  api.getMatchHistory().then(h => { if(Array.isArray(h)){ matchHistory = h; renderHistory(); } }).catch(()=>{});
-}
-
-/* Your MatchHistoryEntry shape isn't pinned down in ARCHITECTURE.md yet, so this
-   accepts either the MatchState-style field names or short/legacy ones. */
-function normalizeHistoryEntry(m, i){
-  return {
-    id: m.matchId ?? m.id ?? i,
-    redName: m.playerRedName ?? m.redName ?? 'Red',
-    blueName: m.playerBlueName ?? m.blueName ?? 'Blue',
-    redScore: m.scoreRed ?? m.redScore ?? 0,
-    blueScore: m.scoreBlue ?? m.blueScore ?? 0,
-    winner: m.winner ?? null,
-    when: m.endedAt ? new Date(m.endedAt).toLocaleString() : (m.date ?? ''),
-  };
+/* ---- history + auto stat tracking, tied to the referee "Match ended" state ---- */
+function recordMatchResult(winner){
+  const redP = players.find(p=>p.id===currentMatch.redId);
+  const blueP = players.find(p=>p.id===currentMatch.blueId);
+  if(redP){ redP.matches++; if(winner==='red') redP.wins++; }
+  if(blueP){ blueP.matches++; if(winner==='blue') blueP.wins++; }
+  matchHistory.unshift({
+    matchNum: matchCounter++, date:'Just now',
+    redName: redP ? redP.name : 'Red', blueName: blueP ? blueP.name : 'Blue',
+    redScore, blueScore, winner
+  });
+  renderPlayers();
+  renderHistory();
 }
 
 function renderHistory(){
   const box = document.getElementById('historyList');
   if(!box) return;
-  if(!matchHistory.length){ box.innerHTML = emptyState('No completed matches yet.'); return; }
-  box.innerHTML = matchHistory.map((raw,i)=>{
-    const m = normalizeHistoryEntry(raw, i);
-    return `
+  box.innerHTML = matchHistory.map(m=>`
     <div class="match-card">
       <div class="side red"><div class="tn">Red</div><div>${m.redName}</div><div class="sc">${String(m.redScore).padStart(2,'0')}</div></div>
-      <div class="mid">Match ${m.id}<br>${m.when}<br>
+      <div class="mid">Match #${m.matchNum}<br>${m.date}<br>
         <span class="winner">${m.winner==='draw' ? 'Draw' : 'Winner: '+(m.winner==='red'?'Red':'Blue')}</span></div>
       <div class="side blue"><div class="tn">Blue</div><div>${m.blueName}</div><div class="sc">${String(m.blueScore).padStart(2,'0')}</div></div>
-    </div>`;
-  }).join('');
+    </div>`).join('');
 }
 
 /* ===== SETTINGS: toggles + save ===== */
 function toggleSwitch(el){ el.classList.toggle('on'); }
 
-/* Collects every input/select/toggle on the Settings screen into one object.
-   Adjust the keys here if you rename fields — this is the payload sent to PUT /settings. */
-function collectSettingsPayload(){
-  const s = document.getElementById('screen-settings');
-  const nums = [...s.querySelectorAll('input[type="number"]')].map(i=>Number(i.value));
-  const selects = [...s.querySelectorAll('select')].map(sel=>sel.value);
-  const toggles = [...s.querySelectorAll('.switch')].map(sw=>sw.classList.contains('on'));
-  const range = s.querySelector('input[type="range"]');
-  return {
-    matchDurationMin: nums[0], intenseModeTriggerSec: nums[1], goalLimit: nums[2],
-    kickerCooldownSec: nums[3], empCooldownSec: nums[4],
-    winCondition: selects[0], lightingMode: selects[1],
-    suddenDeathOnTie: toggles[0], autoPauseOnDisconnect: toggles[1],
-    kickerEnabled: toggles[2], empEnabled: toggles[3],
-    confettiOnGoal: toggles[4], arenaShakeOnGoal: toggles[5], ledSweepInIntense: toggles[6],
-    goalSound: toggles[7], intenseModeMusic: toggles[8], matchEndMusic: toggles[9],
-    masterVolume: range ? Number(range.value) : undefined,
-  };
+function saveSettings(){
+  const msg = document.getElementById('settingsSavedMsg');
+  msg.classList.add('show');
+  setTimeout(()=>msg.classList.remove('show'), 2000);
 }
-
-async function loadSettingsFromBackend() {
-  try {
-    const response = await api.getSettings();
-
-    const settings = response?.settings ?? response;
-
-    if (!settings) {
-      throw new Error("Settings not received from backend");
-    }
-
-    const screen = document.getElementById("screen-settings");
-
-    if (!screen) return;
-
-    // ---------------------------------------------------------
-    // Number inputs
-    // ---------------------------------------------------------
-
-    const nums = [
-      ...screen.querySelectorAll('input[type="number"]')
-    ];
-
-    if (nums[0]) {
-      nums[0].value = settings.matchDurationMin;
-    }
-
-    if (nums[1]) {
-      nums[1].value = settings.intenseModeTriggerSec;
-    }
-
-    if (nums[2]) {
-      nums[2].value = settings.goalLimit;
-    }
-
-    if (nums[3]) {
-      nums[3].value = settings.kickerCooldownSec;
-    }
-
-    if (nums[4]) {
-      nums[4].value = settings.empCooldownSec;
-    }
-
-    // ---------------------------------------------------------
-    // Selects
-    // ---------------------------------------------------------
-
-    const selects = [
-      ...screen.querySelectorAll("select")
-    ];
-
-    if (selects[0]) {
-      selects[0].value = settings.winCondition;
-    }
-
-    if (selects[1]) {
-      selects[1].value = settings.lightingMode;
-    }
-
-    // ---------------------------------------------------------
-    // Switches
-    // ---------------------------------------------------------
-
-    const values = [
-      settings.suddenDeathOnTie,
-      settings.autoPauseOnDisconnect,
-      settings.kickerEnabled,
-      settings.empEnabled,
-      settings.confettiOnGoal,
-      settings.arenaShakeOnGoal,
-      settings.ledSweepInIntense,
-      settings.goalSound,
-      settings.intenseModeMusic,
-      settings.matchEndMusic,
-    ];
-
-    const switches = [
-      ...screen.querySelectorAll(".switch")
-    ];
-
-    switches.forEach((sw, index) => {
-      sw.classList.toggle("on", Boolean(values[index]));
-    });
-
-    // ---------------------------------------------------------
-    // Master volume
-    // ---------------------------------------------------------
-
-    const range = screen.querySelector(
-      'input[type="range"]'
-    );
-
-    if (range && settings.masterVolume !== undefined) {
-      range.value = settings.masterVolume;
-    }
-
-    console.log("[settings] loaded from backend", settings);
-
-  } catch (error) {
-    console.error(
-      "[settings] failed to load:",
-      error
-    );
-  }
-}
-
-
-async function saveSettingsToBackend() {
-  try {
-    const payload = collectSettingsPayload();
-
-    console.log(
-      "[settings] saving:",
-      payload
-    );
-
-    const response =
-      await api.saveSettings(payload);
-
-    const settings =
-      response?.settings ?? response;
-
-    console.log(
-      "[settings] saved successfully:",
-      settings
-    );
-
-    alert("Settings saved successfully.");
-
-  } catch (error) {
-    console.error(
-      "[settings] save failed:",
-      error
-    );
-
-    alert(
-      "Failed to save settings. Check the server."
-    );
-  }
-}
-
-
-
-function setupSettingsBackend() {
-  const screen =
-    document.getElementById("screen-settings");
-
-  if (!screen) return;
-
-  const saveButton =
-    screen.querySelector("button");
-
-  if (!saveButton) return;
-
-  if (
-    saveButton.textContent
-      .trim()
-      .toLowerCase()
-      .includes("save settings")
-  ) {
-    saveButton.addEventListener(
-      "click",
-      saveSettingsToBackend
-    );
-  }
-}
-
 
 renderPlayers();
 renderQueue();
 renderHistory();
 refSyncDisplay();
-bootstrapFromBackend(); // pulls live match/players/queue/history the moment a backend is configured
-
-loadSettingsFromBackend();
-setupSettingsBackend();
 </script>
+
+<script>
+(function(){
+  const clock = document.getElementById('uiClock');
+  function tick(){
+    if(!clock) return;
+    const d = new Date();
+    clock.textContent = d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  }
+  tick(); setInterval(tick,1000);
+
+  // Visual connection indicator for this standalone UI.
+  // When the real WebSocket/backend is integrated, these two values can be
+  // updated from the server state without changing the visual layer.
+  window.setArenaDevices = function(online,total){
+    const el = document.getElementById('deviceCount');
+    if(el) el.textContent = online + '/' + total + ' devices';
+  };
+  window.setArenaConnection = function(online){
+    const el = document.getElementById('arenaConnection');
+    if(!el) return;
+    el.textContent = online ? '● Arena online' : '● Arena offline';
+    el.style.color = online ? 'var(--green)' : 'var(--red)';
+  };
+})();
+</script>
+
+<!-- ESPNET_BACKEND_BRIDGE_START -->
+<script>
+(function () {
+    "use strict";
+
+    console.log("[ESPNet] Backend bridge loading...");
+
+    let backendDevices = [];
+    let backendPlayers = [];
+    let backendMatch = null;
+    let backendHistory = [];
+
+    async function api(url, method, body) {
+        const options = {
+            method: method || "GET",
+            headers: {}
+        };
+
+        if (body !== undefined) {
+            options.headers["Content-Type"] = "application/json";
+            options.body = JSON.stringify(body);
+        }
+
+        const response = await fetch(url, options);
+        const text = await response.text();
+
+        let data = null;
+
+        try {
+            data = text ? JSON.parse(text) : null;
+        } catch (_) {}
+
+        if (!response.ok) {
+            throw new Error(
+                data && data.error
+                    ? data.error
+                    : "HTTP " + response.status
+            );
+        }
+
+        return data;
+    }
+
+    function esc(value) {
+        return String(value == null ? "" : value)
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;")
+            .replaceAll("'", "&#039;");
+    }
+
+    function formatClock(ms) {
+        const total = Math.max(
+            0,
+            Math.floor(Number(ms || 0) / 1000)
+        );
+
+        const minutes = Math.floor(total / 60);
+        const seconds = total % 60;
+
+        return (
+            String(minutes).padStart(2, "0") +
+            ":" +
+            String(seconds).padStart(2, "0")
+        );
+    }
+
+    function updateConnection() {
+        const conn = document.querySelector(".conn");
+
+        if (!conn) return;
+
+        const online = backendDevices.filter(
+            d => d && d.isOnline
+        ).length;
+
+        const total = backendDevices.length;
+
+        conn.innerHTML =
+            '<span id="arenaConnection">● Arena ' +
+            (online > 0 ? "online" : "offline") +
+            "</span>" +
+            '<span id="deviceCount">' +
+            online +
+            "/" +
+            total +
+            " devices</span>";
+    }
+
+    function updateMatch() {
+        if (!backendMatch) return;
+
+        const red =
+            Number(backendMatch.scoreRed || 0);
+
+        const blue =
+            Number(backendMatch.scoreBlue || 0);
+
+        const timer =
+            document.getElementById("timer");
+
+        if (timer) {
+            timer.textContent =
+                formatClock(
+                    backendMatch.timeRemainingMs
+                );
+        }
+
+        const redScore =
+            document.getElementById("redscore");
+
+        const blueScore =
+            document.getElementById("bluescore");
+
+        if (redScore) {
+            redScore.textContent = red;
+        }
+
+        if (blueScore) {
+            blueScore.textContent = blue;
+        }
+
+        const stateLabel =
+            document.getElementById("statelabel");
+
+        if (stateLabel) {
+
+            if (
+                backendMatch.matchActive &&
+                !backendMatch.isPaused
+            ) {
+                stateLabel.textContent =
+                    "Match live";
+            }
+            else if (
+                backendMatch.matchActive &&
+                backendMatch.isPaused
+            ) {
+                stateLabel.textContent =
+                    "Match paused";
+            }
+            else {
+                stateLabel.textContent =
+                    "Match ready";
+            }
+        }
+
+        const refClock =
+            document.getElementById("refClockLine");
+
+        if (refClock) {
+            refClock.textContent =
+                formatClock(
+                    backendMatch.timeRemainingMs
+                );
+        }
+
+        const refState =
+            document.getElementById("refStateLine");
+
+        if (refState) {
+
+            if (
+                backendMatch.matchActive &&
+                !backendMatch.isPaused
+            ) {
+                refState.textContent =
+                    "Match live";
+            }
+            else if (
+                backendMatch.matchActive &&
+                backendMatch.isPaused
+            ) {
+                refState.textContent =
+                    "Match paused";
+            }
+            else {
+                refState.textContent =
+                    "Match ready";
+            }
+        }
+    }
+
+    /* ========================================================
+       REFEREE
+       ======================================================== */
+
+    window.refStart = async function () {
+
+        try {
+            await api(
+                "/api/match/start",
+                "POST",
+                {}
+            );
+
+            await refreshAll();
+
+        } catch (error) {
+
+            console.error(
+                "[ESPNet] Start failed:",
+                error
+            );
+
+            alert(
+                "Start failed: " +
+                error.message
+            );
+        }
+    };
+
+    window.refPause = async function () {
+
+        try {
+
+            await api(
+                "/api/match/pause",
+                "POST"
+            );
+
+            await refreshAll();
+
+        } catch (error) {
+
+            console.error(
+                "[ESPNet] Pause failed:",
+                error
+            );
+        }
+    };
+
+    window.refResume = async function () {
+
+        try {
+
+            await api(
+                "/api/match/resume",
+                "POST"
+            );
+
+            await refreshAll();
+
+        } catch (error) {
+
+            console.error(
+                "[ESPNet] Resume failed:",
+                error
+            );
+        }
+    };
+
+    window.refReset = async function () {
+
+        if (
+            !confirm(
+                "Reset match? This clears the score and timer."
+            )
+        ) {
+            return;
+        }
+
+        try {
+
+            await api(
+                "/api/match/reset",
+                "POST"
+            );
+
+            await refreshAll();
+
+        } catch (error) {
+
+            console.error(
+                "[ESPNet] Reset failed:",
+                error
+            );
+        }
+    };
+
+    window.refGoal = async function (team) {
+
+    if (
+        team !== "red" &&
+        team !== "blue"
+    ) {
+        return;
+    }
+
+    try {
+
+        // ==========================================
+        // BACKEND GOAL
+        // ==========================================
+
+        await api(
+            "/api/match/goal",
+            "POST",
+            {
+                team: team
+            }
+        );
+
+        // ==========================================
+        // UPDATE BACKEND STATE
+        // ==========================================
+
+        await refreshAll();
+
+        // ==========================================
+        // GOAL ANIMATION
+        // ==========================================
+
+        const arena =
+            document.getElementById("arena");
+
+        if (arena) {
+
+            arena.classList.remove(
+                "goal",
+                "goal-red",
+                "goal-blue"
+            );
+
+            /*
+             * Force browser reflow.
+             * Isse animation har goal par
+             * dobara start hogi.
+             */
+
+            void arena.offsetWidth;
+
+            arena.classList.add("goal");
+
+            if (team === "red") {
+                arena.classList.add("goal-red");
+            }
+            else {
+                arena.classList.add("goal-blue");
+            }
+
+            setTimeout(
+                function () {
+
+                    arena.classList.remove(
+                        "goal",
+                        "goal-red",
+                        "goal-blue"
+                    );
+
+                },
+                1600
+            );
+        }
+
+        // ==========================================
+        // GOAL TEXT
+        // ==========================================
+
+        const goalText =
+            document.getElementById("goaltext");
+
+        if (goalText) {
+
+            goalText.textContent =
+                team === "red"
+                    ? "RED SCORES!"
+                    : "BLUE SCORES!";
+
+            goalText.style.display = "block";
+
+            setTimeout(
+                function () {
+
+                    goalText.style.display = "";
+
+                },
+                1600
+            );
+        }
+
+    }
+    catch (error) {
+
+        console.error(
+            "[ESPNet] Goal failed:",
+            error
+        );
+
+        alert(
+            "Goal failed: " +
+            error.message
+        );
+    }
+};
+
+    window.refUndoGoal = async function () {
+
+        try {
+
+            await api(
+                "/api/match/undo",
+                "POST"
+            );
+
+            await refreshAll();
+
+        } catch (error) {
+
+            console.error(
+                "[ESPNet] Undo failed:",
+                error
+            );
+        }
+    };
+
+    window.refAdjustTimer =
+        async function (deltaSeconds) {
+
+            try {
+
+                await api(
+                    "/api/match/time",
+                    "POST",
+                    {
+                        deltaMs:
+                            Number(deltaSeconds) *
+                            1000
+                    }
+                );
+
+                await refreshAll();
+
+            } catch (error) {
+
+                console.error(
+                    "[ESPNet] Timer adjustment failed:",
+                    error
+                );
+            }
+        };
+
+    /* ========================================================
+       PLAYERS
+       ======================================================== */
+
+    async function loadPlayers() {
+
+        try {
+
+            const data =
+                await api("/api/players");
+
+            backendPlayers =
+                Array.isArray(data.players)
+                    ? data.players
+                    : [];
+
+            renderPlayers();
+
+        } catch (error) {
+
+            console.error(
+                "[ESPNet] Players failed:",
+                error
+            );
+        }
+    }
+
+    function renderPlayers() {
+
+        const tbody =
+            document.getElementById(
+                "playersBody"
+            );
+
+        if (!tbody) return;
+
+        if (!backendPlayers.length) {
+
+            tbody.innerHTML =
+                '<tr>' +
+                    '<td colspan="7" style="text-align:center">' +
+                        "No players registered" +
+                    "</td>" +
+                "</tr>";
+
+            return;
+        }
+
+        tbody.innerHTML =
+            backendPlayers.map(
+                player => {
+
+                    return (
+                        "<tr>" +
+
+                        "<td>" +
+                        esc(player.name) +
+                        "</td>" +
+
+                        "<td>" +
+                        esc(
+                            player.team ||
+                            "—"
+                        ) +
+                        "</td>" +
+
+                        "<td>" +
+                        esc(
+                            player.controllerMac ||
+                            "—"
+                        ) +
+                        "</td>" +
+
+                        "<td>" +
+                        Number(
+                            player.matches || 0
+                        ) +
+                        "</td>" +
+
+                        "<td>" +
+                        Number(
+                            player.wins || 0
+                        ) +
+                        "</td>" +
+
+                        "<td>" +
+                        (
+                            player.available
+                                ? "Available"
+                                : "Unavailable"
+                        ) +
+                        "</td>" +
+
+                        "<td>" +
+                        '<button onclick="window.backendRemovePlayer(\'' +
+                        esc(player.id) +
+                        "')\">" +
+                        "Remove" +
+                        "</button>" +
+                        "</td>" +
+
+                        "</tr>"
+                    );
+                }
+            ).join("");
+    }
+
+    window.backendRemovePlayer =
+        async function (id) {
+
+            try {
+
+                await api(
+                    "/api/players/" +
+                    encodeURIComponent(id),
+                    "DELETE"
+                );
+
+                await loadPlayers();
+
+            } catch (error) {
+
+                console.error(
+                    "[ESPNet] Player delete failed:",
+                    error
+                );
+            }
+        };
+
+    window.addPlayer = async function () {
+
+        const nameEl =
+            document.getElementById(
+                "newPlayerName"
+            );
+
+        const teamEl =
+            document.getElementById(
+                "newPlayerTeam"
+            );
+
+        if (
+            !nameEl ||
+            !nameEl.value.trim()
+        ) {
+            return;
+        }
+
+        try {
+
+            await api(
+                "/api/players",
+                "POST",
+                {
+                    name:
+                        nameEl.value.trim(),
+
+                    team:
+                        teamEl &&
+                        (
+                            teamEl.value ===
+                            "red" ||
+                            teamEl.value ===
+                            "blue"
+                        )
+                            ? teamEl.value
+                            : null
+                }
+            );
+
+            nameEl.value = "";
+
+            await loadPlayers();
+
+        } catch (error) {
+
+            console.error(
+                "[ESPNet] Player add failed:",
+                error
+            );
+
+            alert(
+                "Player add failed: " +
+                error.message
+            );
+        }
+    };
+
+    /* ========================================================
+       MATCH STATE
+       ======================================================== */
+
+    async function loadMatch() {
+
+        try {
+
+            const data =
+                await api(
+                    "/api/match/state"
+                );
+
+            backendMatch =
+                data.match || null;
+
+            updateMatch();
+
+        } catch (error) {
+
+            console.error(
+                "[ESPNet] Match state failed:",
+                error
+            );
+        }
+    }
+
+    /* ========================================================
+       DEVICES
+       ======================================================== */
+
+    async function loadDevices() {
+
+        try {
+
+            const data =
+                await api(
+                    "/api/devices"
+                );
+
+            backendDevices =
+                Array.isArray(data.devices)
+                    ? data.devices
+                    : [];
+
+            updateConnection();
+
+        } catch (error) {
+
+            console.error(
+                "[ESPNet] Devices failed:",
+                error
+            );
+
+            backendDevices = [];
+
+            updateConnection();
+        }
+    }
+
+    /* ========================================================
+       HISTORY
+       ======================================================== */
+
+    async function loadHistory() {
+
+        try {
+
+            const data =
+                await api(
+                    "/api/match/history"
+                );
+
+            backendHistory =
+                Array.isArray(data.entries)
+                    ? data.entries
+                    : [];
+
+        } catch (error) {
+
+            console.error(
+                "[ESPNet] History failed:",
+                error
+            );
+        }
+    }
+
+    /* ========================================================
+       REFRESH
+       ======================================================== */
+
+    async function refreshAll() {
+
+        await Promise.all([
+            loadDevices(),
+            loadPlayers(),
+            loadMatch(),
+            loadHistory()
+        ]);
+    }
+
+    /* ========================================================
+       INITIALIZE
+       ======================================================== */
+
+    refreshAll();
+
+    /*
+     * Backend state polling.
+     * This keeps UI synchronized even without WebSocket.
+     */
+    setInterval(
+        loadMatch,
+        1000
+    );
+
+    setInterval(
+        loadDevices,
+        3000
+    );
+
+    console.log(
+        "[ESPNet] Backend bridge ready."
+    );
+
+})();
+</script>
+<!-- ESPNET_BACKEND_BRIDGE_END -->
 </body>
 </html>

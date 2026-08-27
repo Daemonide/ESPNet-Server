@@ -22,8 +22,12 @@ let audioCtx = null;
 
 function getAudioContext() {
   if (!audioCtx) {
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    audioCtx = new (
+      window.AudioContext ||
+      window.webkitAudioContext
+    )();
   }
+
   return audioCtx;
 }
 
@@ -46,14 +50,32 @@ function tone(
 
   osc.connect(g).connect(c.destination);
 
-  const t0 = c.currentTime + startOffset;
+  const t0 =
+    c.currentTime +
+    startOffset;
 
-  g.gain.setValueAtTime(0, t0);
-  g.gain.linearRampToValueAtTime(gain, t0 + 0.02);
-  g.gain.linearRampToValueAtTime(0, t0 + duration);
+  g.gain.setValueAtTime(
+    0,
+    t0
+  );
+
+  g.gain.linearRampToValueAtTime(
+    gain,
+    t0 + 0.02
+  );
+
+  g.gain.linearRampToValueAtTime(
+    0,
+    t0 + duration
+  );
 
   osc.start(t0);
-  osc.stop(t0 + duration + 0.05);
+
+  osc.stop(
+    t0 +
+    duration +
+    0.05
+  );
 }
 
 const SFX = {
@@ -69,17 +91,49 @@ const SFX = {
   },
 
   kick_fired() {
-    tone(220, 0, 0.08, "square", 0.15);
+    tone(
+      220,
+      0,
+      0.08,
+      "square",
+      0.15
+    );
   },
 
   emp_fired() {
-    tone(120, 0, 0.3, "sawtooth", 0.2);
-    tone(90, 0.1, 0.3, "sawtooth", 0.2);
+    tone(
+      120,
+      0,
+      0.3,
+      "sawtooth",
+      0.2
+    );
+
+    tone(
+      90,
+      0.1,
+      0.3,
+      "sawtooth",
+      0.2
+    );
   },
 
   intense_start() {
-    tone(440, 0, 0.1, "square", 0.1);
-    tone(440, 0.2, 0.1, "square", 0.1);
+    tone(
+      440,
+      0,
+      0.1,
+      "square",
+      0.1
+    );
+
+    tone(
+      440,
+      0.2,
+      0.1,
+      "square",
+      0.1
+    );
   },
 
   intense_end() {},
@@ -105,12 +159,16 @@ const SFX = {
 
 function playAudioEvent(event) {
   try {
-    if (SFX[event]) SFX[event]();
+    if (SFX[event]) {
+      SFX[event]();
+    }
   } catch (err) {
-    console.warn("Audio error:", err);
+    console.warn(
+      "Audio error:",
+      err
+    );
   }
 }
-
 
 // ================================================================
 // HELPERS
@@ -121,24 +179,44 @@ function $(id) {
 }
 
 function fmtClock(ms) {
-  const total = Math.max(0, Math.round(Number(ms || 0) / 1000));
+  const total =
+    Math.max(
+      0,
+      Math.round(
+        Number(ms || 0) /
+        1000
+      )
+    );
 
-  const minutes = Math.floor(total / 60);
-  const seconds = total % 60;
+  const minutes =
+    Math.floor(
+      total / 60
+    );
+
+  const seconds =
+    total % 60;
 
   return (
-    String(minutes).padStart(2, "0") +
+    String(minutes).padStart(
+      2,
+      "0"
+    ) +
     ":" +
-    String(seconds).padStart(2, "0")
+    String(seconds).padStart(
+      2,
+      "0"
+    )
   );
 }
 
 function setTimer(text) {
-  const timer = $("timer");
+  const timer =
+    $("timer");
 
   if (!timer) return;
 
-  const parts = String(text).split(":");
+  const parts =
+    String(text).split(":");
 
   timer.innerHTML =
     parts[0] +
@@ -147,13 +225,17 @@ function setTimer(text) {
 }
 
 function scoreText(value) {
-  return String(Number(value || 0)).padStart(2, "0");
+  return String(
+    Number(value || 0)
+  ).padStart(2, "0");
 }
 
 function safeText(value) {
-  return value == null || value === "" ? "—" : String(value);
+  return value == null ||
+    value === ""
+    ? "—"
+    : String(value);
 }
-
 
 // ================================================================
 // CONNECTION
@@ -161,38 +243,58 @@ function safeText(value) {
 
 function setConnectionStatus(online) {
 
-  // Old/simple UI support
-  const oldStatus = $("conn-status");
+  const oldStatus =
+    $("conn-status");
 
   if (oldStatus) {
-    oldStatus.textContent = online
-      ? "connected"
-      : "reconnecting…";
+
+    oldStatus.textContent =
+      online
+        ? "connected"
+        : "reconnecting…";
 
     oldStatus.className =
-      `pill ${online ? "online" : "offline"}`;
+      `pill ${
+        online
+          ? "online"
+          : "offline"
+      }`;
   }
 
-  // Robo Arena UI
-  const arena = $("arena");
+  const conn =
+    document.querySelector(
+      ".conn"
+    );
 
-  if (arena) {
-
-    const conn = arena.querySelector(".conn");
-
-    if (conn) {
-      const deviceCount = state.devices.length;
-
-      const onlineCount =
-        state.devices.filter(d => d.isOnline).length;
-
-      conn.innerHTML =
-        `<span>● Arena ${online ? "online" : "offline"}</span>` +
-        `<span>${onlineCount}/${deviceCount || 0} devices</span>`;
-    }
+  if (!conn) {
+    return;
   }
+
+  const devices =
+    Array.isArray(
+      state.devices
+    )
+      ? state.devices
+      : [];
+
+  const deviceCount =
+    devices.length;
+
+  const onlineCount =
+    devices.filter(
+      d => d.isOnline
+    ).length;
+
+  conn.innerHTML =
+    `<span>● Arena ${
+      online
+        ? "online"
+        : "offline"
+    }</span>` +
+    `<span>${
+      onlineCount
+    }/${deviceCount} devices</span>`;
 }
-
 
 // ================================================================
 // WEBSOCKET
@@ -200,39 +302,88 @@ function setConnectionStatus(online) {
 
 function connectWs() {
 
-  clearTimeout(reconnectTimer);
+  clearTimeout(
+    reconnectTimer
+  );
 
   const protocol =
     location.protocol === "https:"
       ? "wss"
       : "ws";
 
-  ws = new WebSocket(
-    `${protocol}://${location.host}/ws`
+  const wsUrl =
+    `${protocol}://${location.host}/ws`;
+
+  console.log(
+    "[WS] connecting:",
+    wsUrl
   );
+
+  try {
+
+    ws =
+      new WebSocket(
+        wsUrl
+      );
+
+  } catch (error) {
+
+    console.error(
+      "[WS] creation error:",
+      error
+    );
+
+    setConnectionStatus(
+      false
+    );
+
+    reconnectTimer =
+      setTimeout(
+        connectWs,
+        1500
+      );
+
+    return;
+  }
 
   ws.onopen = () => {
 
-    console.log("[WS] connected");
+    console.log(
+      "[WS] connected"
+    );
 
-    setConnectionStatus(true);
+    setConnectionStatus(
+      true
+    );
   };
 
   ws.onclose = () => {
 
-    console.warn("[WS] disconnected");
-
-    setConnectionStatus(false);
-
-    reconnectTimer = setTimeout(
-      connectWs,
-      1500
+    console.warn(
+      "[WS] disconnected"
     );
+
+    setConnectionStatus(
+      false
+    );
+
+    reconnectTimer =
+      setTimeout(
+        connectWs,
+        1500
+      );
   };
 
-  ws.onerror = () => {
+  ws.onerror = error => {
 
-    console.warn("[WS] error");
+    console.warn(
+      "[WS] error",
+      error
+    );
+
+    setConnectionStatus(
+      false
+    );
 
     try {
       ws.close();
@@ -244,8 +395,14 @@ function connectWs() {
     let msg;
 
     try {
-      msg = JSON.parse(event.data);
+
+      msg =
+        JSON.parse(
+          event.data
+        );
+
     } catch {
+
       console.warn(
         "Invalid WebSocket message:",
         event.data
@@ -254,43 +411,71 @@ function connectWs() {
       return;
     }
 
-    console.log("[WS]", msg);
+    console.log(
+      "[WS]",
+      msg
+    );
 
-    if (msg.type === "state") {
+    if (
+      msg.type ===
+      "state"
+    ) {
 
       state.devices =
-        Array.isArray(msg.devices)
+        Array.isArray(
+          msg.devices
+        )
           ? msg.devices
           : [];
 
       state.match =
-        msg.match || null;
+        msg.match ||
+        null;
+
+      setConnectionStatus(
+        true
+      );
 
       render();
 
       return;
     }
 
-    if (msg.type === "audio_event") {
+    if (
+      msg.type ===
+      "audio_event"
+    ) {
 
-      playAudioEvent(msg.event);
+      playAudioEvent(
+        msg.event
+      );
 
       return;
     }
 
-    if (msg.type === "history") {
+    if (
+      msg.type ===
+      "history"
+    ) {
 
       state.history =
-        Array.isArray(msg.entries)
+        Array.isArray(
+          msg.entries
+        )
           ? msg.entries
           : [];
 
-      renderHistory(state.history);
+      renderHistory(
+        state.history
+      );
 
       return;
     }
 
-    if (msg.type === "powerup_rejected") {
+    if (
+      msg.type ===
+      "powerup_rejected"
+    ) {
 
       console.warn(
         "Power-up rejected:",
@@ -302,28 +487,35 @@ function connectWs() {
   };
 }
 
-
 // ================================================================
 // REST
 // ================================================================
 
-async function post(path, body = {}) {
+async function post(
+  path,
+  body = {}
+) {
 
   try {
 
-    const response = await fetch(
-      path,
-      {
-        method: "POST",
+    const response =
+      await fetch(
+        path,
+        {
+          method:
+            "POST",
 
-        headers: {
-          "Content-Type":
-            "application/json",
-        },
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
 
-        body: JSON.stringify(body),
-      }
-    );
+          body:
+            JSON.stringify(
+              body
+            ),
+        }
+      );
 
     if (!response.ok) {
 
@@ -348,24 +540,27 @@ async function post(path, body = {}) {
   }
 }
 
-
 // ================================================================
 // MATCH DISPLAY
 // ================================================================
 
 function renderMatch() {
 
-  const m = state.match;
+  const m =
+    state.match;
 
-  if (!m) return;
+  if (!m) {
+    return;
+  }
 
   const redName =
-    m.playerRedName || "Red";
+    m.playerRedName ||
+    "Red";
 
   const blueName =
-    m.playerBlueName || "Blue";
+    m.playerBlueName ||
+    "Blue";
 
-  // Player names
   const redPlayer =
     document.querySelector(
       ".truckside.red .pname"
@@ -376,55 +571,66 @@ function renderMatch() {
       ".truckside.blue .pname"
     );
 
-  if (redPlayer)
-    redPlayer.textContent = redName;
+  if (redPlayer) {
+    redPlayer.textContent =
+      redName;
+  }
 
-  if (bluePlayer)
-    bluePlayer.textContent = blueName;
+  if (bluePlayer) {
+    bluePlayer.textContent =
+      blueName;
+  }
 
-
-  // Scores
   const redScore =
     $("redscore");
 
   const blueScore =
     $("bluescore");
 
-  if (redScore)
+  if (redScore) {
     redScore.textContent =
-      scoreText(m.scoreRed);
+      scoreText(
+        m.scoreRed
+      );
+  }
 
-  if (blueScore)
+  if (blueScore) {
     blueScore.textContent =
-      scoreText(m.scoreBlue);
+      scoreText(
+        m.scoreBlue
+      );
+  }
 
-
-  // Timer
   setTimer(
-    fmtClock(m.timeRemainingMs)
+    fmtClock(
+      m.timeRemainingMs
+    )
   );
 
-
-  // Referee panel
   const refScore =
     $("refScoreLine");
 
   if (refScore) {
 
     refScore.textContent =
-      `${scoreText(m.scoreRed)} – ${scoreText(m.scoreBlue)}`;
+      `${scoreText(
+        m.scoreRed
+      )} – ${scoreText(
+        m.scoreBlue
+      )}`;
   }
-
 
   const refClock =
     $("refClockLine");
 
-  if (refClock)
+  if (refClock) {
+
     refClock.textContent =
-      fmtClock(m.timeRemainingMs);
+      fmtClock(
+        m.timeRemainingMs
+      );
+  }
 
-
-  // Intense mode
   const arena =
     $("arena");
 
@@ -432,12 +638,12 @@ function renderMatch() {
 
     arena.classList.toggle(
       "intense",
-      Boolean(m.isIntenseMode)
+      Boolean(
+        m.isIntenseMode
+      )
     );
   }
 
-
-  // Status
   const label =
     $("statelabel");
 
@@ -447,11 +653,15 @@ function renderMatch() {
   const refState =
     $("refStateLine");
 
-  let status = "Match ready";
+  let status =
+    "Match ready";
 
-  if (m.isIntenseMode) {
+  if (
+    m.isIntenseMode
+  ) {
 
-    status = "Intense mode";
+    status =
+      "Intense mode";
 
   } else if (
     m.isRunning ||
@@ -459,24 +669,29 @@ function renderMatch() {
     m.status === "live"
   ) {
 
-    status = "Match live";
+    status =
+      "Match live";
 
   } else if (
     m.status === "paused"
   ) {
 
-    status = "Match paused";
+    status =
+      "Match paused";
 
   } else if (
     m.status === "ended" ||
     m.timeRemainingMs <= 0
   ) {
 
-    status = "Match ended";
+    status =
+      "Match ended";
   }
 
-  if (label)
-    label.textContent = status;
+  if (label) {
+    label.textContent =
+      status;
+  }
 
   if (matchState) {
 
@@ -490,11 +705,11 @@ function renderMatch() {
     );
   }
 
-  if (refState)
-    refState.textContent = status;
+  if (refState) {
+    refState.textContent =
+      status;
+  }
 
-
-  // Status dot
   const dot =
     $("statedot");
 
@@ -507,35 +722,42 @@ function renderMatch() {
     );
   }
 
-
-  // Old UI support
-  if ($("red-name"))
+  if ($("red-name")) {
     $("red-name").textContent =
       redName;
+  }
 
-  if ($("blue-name"))
+  if ($("blue-name")) {
     $("blue-name").textContent =
       blueName;
+  }
 
-  if ($("red-score"))
+  if ($("red-score")) {
     $("red-score").textContent =
       m.scoreRed;
+  }
 
-  if ($("blue-score"))
+  if ($("blue-score")) {
     $("blue-score").textContent =
       m.scoreBlue;
+  }
 
-  if ($("clock"))
+  if ($("clock")) {
     $("clock").textContent =
-      fmtClock(m.timeRemainingMs);
+      fmtClock(
+        m.timeRemainingMs
+      );
+  }
 
-  if ($("intense-badge"))
-    $("intense-badge").classList.toggle(
-      "hidden",
-      !m.isIntenseMode
-    );
+  if ($("intense-badge")) {
+
+    $("intense-badge")
+      .classList.toggle(
+        "hidden",
+        !m.isIntenseMode
+      );
+  }
 }
-
 
 // ================================================================
 // GOAL ANIMATION
@@ -546,7 +768,9 @@ function burstConfetti() {
   const box =
     $("confetti");
 
-  if (!box) return;
+  if (!box) {
+    return;
+  }
 
   box.innerHTML = "";
 
@@ -557,16 +781,24 @@ function burstConfetti() {
     "#ffffff"
   ];
 
-  for (let i = 0; i < 28; i++) {
+  for (
+    let i = 0;
+    i < 28;
+    i++
+  ) {
 
     const piece =
-      document.createElement("i");
+      document.createElement(
+        "i"
+      );
 
     piece.style.left =
       `${Math.random() * 100}%`;
 
     piece.style.background =
-      colors[i % colors.length];
+      colors[
+        i % colors.length
+      ];
 
     piece.style.animationDelay =
       `${Math.random() * 0.4}s`;
@@ -574,34 +806,50 @@ function burstConfetti() {
     piece.style.animationDuration =
       `${1.2 + Math.random() * 0.8}s`;
 
-    box.appendChild(piece);
+    box.appendChild(
+      piece
+    );
   }
 }
 
 let ballTimers = [];
 
-function triggerTruckKick(side) {
+function triggerTruckKick(
+  side
+) {
 
   const truck =
     document.querySelector(
       `.truckside.${side}`
     );
 
-  if (!truck) return;
+  if (!truck) {
+    return;
+  }
 
-  truck.classList.remove("kicking");
+  truck.classList.remove(
+    "kicking"
+  );
 
   void truck.offsetWidth;
 
-  truck.classList.add("kicking");
+  truck.classList.add(
+    "kicking"
+  );
 
   setTimeout(
-    () => truck.classList.remove("kicking"),
+    () =>
+      truck.classList.remove(
+        "kicking"
+      ),
     650
   );
 }
 
-function kickBallTo(direction, side) {
+function kickBallTo(
+  direction,
+  side
+) {
 
   const ballWrap =
     $("ballWrap");
@@ -611,11 +859,18 @@ function kickBallTo(direction, side) {
       `.goalpost.${direction}`
     );
 
-  if (!ballWrap || !goal)
+  if (
+    !ballWrap ||
+    !goal
+  ) {
     return;
+  }
 
   ballTimers.forEach(
-    timer => clearTimeout(timer)
+    timer =>
+      clearTimeout(
+        timer
+      )
   );
 
   ballTimers = [];
@@ -649,55 +904,74 @@ function kickBallTo(direction, side) {
     "kicking"
   );
 
-  triggerTruckKick(side);
-
-  ballTimers.push(
-    setTimeout(() => {
-
-      goal.classList.add("flash");
-
-      setTimeout(
-        () => goal.classList.remove("flash"),
-        550
-      );
-
-    }, 830)
+  triggerTruckKick(
+    side
   );
 
   ballTimers.push(
-    setTimeout(() => {
+    setTimeout(
+      () => {
 
-      ballWrap.classList.remove(
-        "kicking"
-      );
+        goal.classList.add(
+          "flash"
+        );
 
-      void ballWrap.offsetWidth;
+        setTimeout(
+          () =>
+            goal.classList.remove(
+              "flash"
+            ),
+          550
+        );
 
-      ballWrap.classList.add(
-        "returning"
-      );
-
-    }, 900)
+      },
+      830
+    )
   );
 
   ballTimers.push(
-    setTimeout(() => {
+    setTimeout(
+      () => {
 
-      ballWrap.classList.remove(
-        "returning"
-      );
+        ballWrap.classList.remove(
+          "kicking"
+        );
 
-    }, 1400)
+        void ballWrap.offsetWidth;
+
+        ballWrap.classList.add(
+          "returning"
+        );
+
+      },
+      900
+    )
+  );
+
+  ballTimers.push(
+    setTimeout(
+      () => {
+
+        ballWrap.classList.remove(
+          "returning"
+        );
+
+      },
+      1400
+    )
   );
 }
 
-function animateGoal(team) {
+function animateGoal(
+  team
+) {
 
   const arena =
     $("arena");
 
-  if (!arena)
+  if (!arena) {
     return;
+  }
 
   arena.classList.remove(
     "goal",
@@ -731,21 +1005,22 @@ function animateGoal(team) {
     team === "red"
       ? "right"
       : "left",
-
     team
   );
 
-  setTimeout(() => {
+  setTimeout(
+    () => {
 
-    arena.classList.remove(
-      "goal",
-      "goal-red",
-      "goal-blue"
-    );
+      arena.classList.remove(
+        "goal",
+        "goal-red",
+        "goal-blue"
+      );
 
-  }, 1500);
+    },
+    1500
+  );
 }
-
 
 // ================================================================
 // REFEREE COMMANDS
@@ -787,18 +1062,23 @@ async function refReset() {
   );
 }
 
-async function refGoal(team) {
+async function refGoal(
+  team
+) {
 
   const success =
     await post(
       "/api/match/goal",
-      { team }
+      {
+        team
+      }
     );
 
-  // Animation is only visual.
-  // Actual score comes from server.
-  if (success)
-    animateGoal(team);
+  if (success) {
+    animateGoal(
+      team
+    );
+  }
 }
 
 async function refUndoGoal() {
@@ -808,17 +1088,19 @@ async function refUndoGoal() {
   );
 }
 
-async function refAdjustTimer(deltaSeconds) {
+async function refAdjustTimer(
+  deltaSeconds
+) {
 
   await post(
     "/api/match/time",
     {
       deltaMs:
-        deltaSeconds * 1000
+        deltaSeconds *
+        1000
     }
   );
 }
-
 
 // ================================================================
 // OLD SIMPLE UI BUTTONS
@@ -827,107 +1109,124 @@ async function refAdjustTimer(deltaSeconds) {
 function bindOldButtons() {
 
   document
-    .querySelectorAll(".goal-btn")
-    .forEach(button => {
+    .querySelectorAll(
+      ".goal-btn"
+    )
+    .forEach(
+      button => {
 
-      button.addEventListener(
-        "click",
-        () => {
+        button.addEventListener(
+          "click",
+          () => {
 
-          post(
-            "/api/match/goal",
-            {
-              team:
-                button.dataset.team
-            }
-          );
-        }
-      );
+            post(
+              "/api/match/goal",
+              {
+                team:
+                  button.dataset.team
+              }
+            );
 
-    });
-
+          }
+        );
+      }
+    );
 
   const oldStart =
     $("start-btn");
 
-  if (oldStart)
+  if (oldStart) {
     oldStart.onclick =
       refStart;
-
+  }
 
   const oldPause =
     $("pause-btn");
 
-  if (oldPause)
+  if (oldPause) {
     oldPause.onclick =
       refPause;
-
+  }
 
   const oldResume =
     $("resume-btn");
 
-  if (oldResume)
+  if (oldResume) {
     oldResume.onclick =
       refResume;
-
+  }
 
   const oldReset =
     $("reset-btn");
 
-  if (oldReset)
+  if (oldReset) {
     oldReset.onclick =
       refReset;
-
+  }
 
   const oldMinus =
     $("minus1-btn");
 
-  if (oldMinus)
+  if (oldMinus) {
     oldMinus.onclick =
-      () => refAdjustTimer(-60);
-
+      () =>
+        refAdjustTimer(
+          -60
+        );
+  }
 
   const oldPlus =
     $("plus1-btn");
 
-  if (oldPlus)
+  if (oldPlus) {
     oldPlus.onclick =
-      () => refAdjustTimer(60);
-
+      () =>
+        refAdjustTimer(
+          60
+        );
+  }
 
   const oldUndo =
     $("undo-btn");
 
-  if (oldUndo)
+  if (oldUndo) {
     oldUndo.onclick =
       refUndoGoal;
+  }
 }
-
 
 // ================================================================
 // PREVIEW STATE
-// These buttons are visual preview controls only.
-// Real match control happens through referee functions.
 // ================================================================
 
-function setState(stateName, button) {
+function setState(
+  stateName,
+  button
+) {
 
   document
-    .querySelectorAll(".toolbar button")
+    .querySelectorAll(
+      ".toolbar button"
+    )
     .forEach(
-      b => b.classList.remove("active")
+      b =>
+        b.classList.remove(
+          "active"
+        )
     );
 
-  if (button)
-    button.classList.add("active");
-
+  if (button) {
+    button.classList.add(
+      "active"
+    );
+  }
 
   const arena =
     $("arena");
 
-  if (!arena)
+  if (!arena) {
     return;
-
+  }
 
   arena.classList.remove(
     "intense",
@@ -935,7 +1234,6 @@ function setState(stateName, button) {
     "goal-red",
     "goal-blue"
   );
-
 
   const dot =
     $("statedot");
@@ -946,158 +1244,229 @@ function setState(stateName, button) {
   const matchState =
     $("matchstate");
 
-  if (dot)
-    dot.classList.remove("live");
-
-  if (matchState)
-    matchState.classList.remove("live");
-
-
-  if (stateName === "ready") {
-
-    if (label)
-      label.textContent =
-        "Match ready";
-
-    if (matchState)
-      matchState.textContent =
-        "Match ready";
-
-    setTimer("15:00");
-
+  if (dot) {
+    dot.classList.remove(
+      "live"
+    );
   }
 
+  if (matchState) {
+    matchState.classList.remove(
+      "live"
+    );
+  }
 
-  if (stateName === "live") {
+  if (
+    stateName ===
+    "ready"
+  ) {
 
-    if (dot)
-      dot.classList.add("live");
+    if (label) {
+      label.textContent =
+        "Match ready";
+    }
 
-    if (label)
+    if (matchState) {
+      matchState.textContent =
+        "Match ready";
+    }
+
+    setTimer(
+      "15:00"
+    );
+  }
+
+  if (
+    stateName ===
+    "live"
+  ) {
+
+    if (dot) {
+      dot.classList.add(
+        "live"
+      );
+    }
+
+    if (label) {
       label.textContent =
         "Match live";
+    }
 
     if (matchState) {
 
       matchState.textContent =
         "Match live";
 
-      matchState.classList.add("live");
+      matchState.classList.add(
+        "live"
+      );
     }
   }
 
+  if (
+    stateName ===
+    "intense"
+  ) {
 
-  if (stateName === "intense") {
+    if (dot) {
+      dot.classList.add(
+        "live"
+      );
+    }
 
-    if (dot)
-      dot.classList.add("live");
-
-    if (label)
+    if (label) {
       label.textContent =
         "Intense mode";
+    }
 
     if (matchState) {
 
       matchState.textContent =
         "Intense mode";
 
-      matchState.classList.add("live");
+      matchState.classList.add(
+        "live"
+      );
     }
 
     arena.classList.add(
       "intense"
     );
 
-    setTimer("00:44");
+    setTimer(
+      "00:44"
+    );
   }
 
+  if (
+    stateName ===
+    "goalred"
+  ) {
 
-  if (stateName === "goalred") {
+    if (dot) {
+      dot.classList.add(
+        "live"
+      );
+    }
 
-    if (dot)
-      dot.classList.add("live");
-
-    if (label)
+    if (label) {
       label.textContent =
         "Match live";
+    }
 
     if (matchState) {
 
       matchState.textContent =
         "Match live";
 
-      matchState.classList.add("live");
+      matchState.classList.add(
+        "live"
+      );
     }
 
-    animateGoal("red");
+    animateGoal(
+      "red"
+    );
   }
 
+  if (
+    stateName ===
+    "goalblue"
+  ) {
 
-  if (stateName === "goalblue") {
+    if (dot) {
+      dot.classList.add(
+        "live"
+      );
+    }
 
-    if (dot)
-      dot.classList.add("live");
-
-    if (label)
+    if (label) {
       label.textContent =
         "Match live";
+    }
 
     if (matchState) {
 
       matchState.textContent =
         "Match live";
 
-      matchState.classList.add("live");
+      matchState.classList.add(
+        "live"
+      );
     }
 
-    animateGoal("blue");
+    animateGoal(
+      "blue"
+    );
   }
 
+  if (
+    stateName ===
+    "ended"
+  ) {
 
-  if (stateName === "ended") {
-
-    if (label)
+    if (label) {
       label.textContent =
         "Match ended";
+    }
 
-    if (matchState)
+    if (matchState) {
       matchState.textContent =
         "Match ended";
+    }
 
-    setTimer("00:00");
+    setTimer(
+      "00:00"
+    );
   }
 }
-
 
 // ================================================================
 // NAVIGATION
 // ================================================================
 
-function showScreen(name, button) {
+function showScreen(
+  name,
+  button
+) {
 
   document
-    .querySelectorAll(".nav button")
+    .querySelectorAll(
+      ".nav button"
+    )
     .forEach(
-      b => b.classList.remove("active")
+      b =>
+        b.classList.remove(
+          "active"
+        )
     );
 
-  if (button)
-    button.classList.add("active");
+  if (button) {
+    button.classList.add(
+      "active"
+    );
+  }
 
   document
-    .querySelectorAll(".screen")
+    .querySelectorAll(
+      ".screen"
+    )
     .forEach(
       screen =>
-        screen.classList.remove("active")
+        screen.classList.remove(
+          "active"
+        )
     );
 
   const screen =
     $(`screen-${name}`);
 
-  if (screen)
-    screen.classList.add("active");
+  if (screen) {
+    screen.classList.add(
+      "active"
+    );
+  }
 }
-
 
 // ================================================================
 // FLEET
@@ -1111,21 +1480,26 @@ function renderFleet() {
     lighting: [],
   };
 
-  for (const device of state.devices) {
+  for (
+    const device
+    of state.devices
+  ) {
 
     if (
       device.nodeType &&
-      byType[device.nodeType]
+      byType[
+        device.nodeType
+      ]
     ) {
 
       byType[
         device.nodeType
-      ].push(device);
+      ].push(
+        device
+      );
     }
   }
 
-
-  // New Claude UI
   const fleetScreen =
     $("screen-fleet");
 
@@ -1136,7 +1510,9 @@ function renderFleet() {
         ".grid3 > .card"
       );
 
-    if (cards.length >= 3) {
+    if (
+      cards.length >= 3
+    ) {
 
       renderFleetCard(
         cards[0],
@@ -1158,8 +1534,6 @@ function renderFleet() {
     }
   }
 
-
-  // Old UI support
   renderOldFleet(
     "controllers",
     byType.controller
@@ -1185,7 +1559,9 @@ function renderFleetCard(
   card.innerHTML =
     `<h4>${title}</h4>`;
 
-  if (!devices.length) {
+  if (
+    !devices.length
+  ) {
 
     card.innerHTML +=
       `<div class="device">
@@ -1199,95 +1575,103 @@ function renderFleetCard(
     return;
   }
 
+  devices.forEach(
+    device => {
 
-  devices.forEach(device => {
+      const online =
+        Boolean(
+          device.isOnline
+        );
 
-    const online =
-      Boolean(device.isOnline);
+      const label =
+        safeText(
+          device.label ||
+          device.mac
+        );
 
-    const label =
-      safeText(
-        device.label ||
-        device.mac
-      );
+      const battery =
+        device.batteryPct ==
+        null
+          ? "?"
+          : device.batteryPct;
 
-    const battery =
-      device.batteryPct == null
-        ? "?"
-        : device.batteryPct;
+      let meta =
+        `MAC ${safeText(
+          device.mac
+        )} · ${battery}% battery`;
 
+      if (
+        device.pairedMac
+      ) {
 
-    let meta =
-      `MAC ${safeText(device.mac)} · ${battery}% battery`;
+        meta +=
+          ` · paired → ${
+            device.pairedMac
+          }`;
+      }
 
+      if (
+        device.nodeType ===
+        "controller"
+      ) {
 
-    if (device.pairedMac) {
+        const kickReady =
+          !device.kickerCooldownUntil ||
+          device.kickerCooldownUntil <=
+            Date.now();
 
-      meta +=
-        ` · paired → ${device.pairedMac}`;
-    }
+        meta +=
+          ` · Kicker ${
+            kickReady
+              ? "ready"
+              : "cooldown"
+          }`;
 
+        meta +=
+          ` · EMP ${
+            device.powerupEmpReady
+              ? "ready"
+              : "locked"
+          }`;
+      }
 
-    if (
-      device.nodeType ===
-      "controller"
-    ) {
+      const row =
+        document.createElement(
+          "div"
+        );
 
-      const kickReady =
-        !device.kickerCooldownUntil ||
-        device.kickerCooldownUntil <=
-          Date.now();
+      row.className =
+        "device";
 
-      meta +=
-        ` · Kicker ${
-          kickReady
-            ? "ready"
-            : "cooldown"
-        }`;
+      row.innerHTML = `
+        <div>
+          <div class="name">
+            ${label}
+          </div>
 
-      meta +=
-        ` · EMP ${
-          device.powerupEmpReady
-            ? "ready"
-            : "locked"
-        }`;
-    }
-
-
-    const row =
-      document.createElement("div");
-
-    row.className =
-      "device";
-
-
-    row.innerHTML = `
-      <div>
-        <div class="name">
-          ${label}
+          <div class="meta">
+            ${meta}
+          </div>
         </div>
 
-        <div class="meta">
-          ${meta}
-        </div>
-      </div>
-
-      <span class="${
-        online
-          ? "stat-online"
-          : "stat-offline"
-      }">
-        ${
+        <span class="${
           online
-            ? "Online"
-            : "Offline"
-        }
-      </span>
-    `;
+            ? "stat-online"
+            : "stat-offline"
+        }">
+          ${
+            online
+              ? "Online"
+              : "Offline"
+          }
+        </span>
+      `;
 
-
-    card.appendChild(row);
-  });
+      card.appendChild(
+        row
+      );
+    }
+  );
 }
 
 function renderOldFleet(
@@ -1295,13 +1679,18 @@ function renderOldFleet(
   devices
 ) {
 
-  const el = $(elementId);
+  const el =
+    $(elementId);
 
-  if (!el) return;
+  if (!el) {
+    return;
+  }
 
   el.innerHTML = "";
 
-  if (!devices.length) {
+  if (
+    !devices.length
+  ) {
 
     el.innerHTML =
       '<div class="meta">none seen yet</div>';
@@ -1312,30 +1701,35 @@ function renderOldFleet(
   devices.forEach(
     d =>
       el.appendChild(
-        createOldDeviceCard(d)
+        createOldDeviceCard(
+          d
+        )
       )
   );
 }
 
-function createOldDeviceCard(d) {
+function createOldDeviceCard(
+  d
+) {
 
   const div =
-    document.createElement("div");
+    document.createElement(
+      "div"
+    );
 
   div.className =
     "device-card" +
     (
       d.powerCutUntil &&
-      d.powerCutUntil > Date.now()
+      d.powerCutUntil >
+        Date.now()
         ? " frozen"
         : ""
     );
 
-
   const label =
     d.label ||
     d.mac;
-
 
   div.innerHTML = `
     <div>
@@ -1355,24 +1749,26 @@ function createOldDeviceCard(d) {
     </div>
 
     <div class="meta">
-
-      team: ${d.team ?? "—"}
+      team: ${
+        d.team ?? "—"
+      }
 
       · batt:
-      ${d.batteryPct ?? "?"}%
+      ${
+        d.batteryPct ??
+        "?"
+      }%
 
       ${
         d.pairedMac
           ? `· paired: ${d.pairedMac}`
           : ""
       }
-
     </div>
   `;
 
   return div;
 }
-
 
 // ================================================================
 // PAIRING
@@ -1383,28 +1779,36 @@ function fillSelect(
   devices
 ) {
 
-  const select = $(id);
+  const select =
+    $(id);
 
-  if (!select) return;
+  if (!select) {
+    return;
+  }
 
   const previous =
     select.value;
-
 
   select.innerHTML =
     devices
       .map(
         device =>
-          `<option value="${device.mac}">
-             ${device.label || device.mac}
-           </option>`
+          `<option value="${
+            device.mac
+          }">
+            ${
+              device.label ||
+              device.mac
+            }
+          </option>`
       )
       .join("");
 
-
   if (
     devices.some(
-      d => d.mac === previous
+      d =>
+        d.mac ===
+        previous
     )
   ) {
 
@@ -1429,7 +1833,6 @@ function renderPairingOptions() {
         "truck"
     );
 
-
   fillSelect(
     "pair-controller",
     controllers
@@ -1440,34 +1843,6 @@ function renderPairingOptions() {
     trucks
   );
 
-
-  // Old UI
-  const list =
-    $("pairing-list");
-
-  if (list) {
-
-    list.innerHTML = "";
-
-    controllers.forEach(
-      controller => {
-
-        if (!controller.pairedMac)
-          return;
-
-        const row =
-          document.createElement("div");
-
-        row.textContent =
-          `${controller.label || controller.mac} ↔ ${controller.pairedMac}`;
-
-        list.appendChild(row);
-      }
-    );
-  }
-
-
-  // Claude UI pairing matrix
   renderPairingMatrix(
     controllers,
     trucks
@@ -1482,32 +1857,32 @@ function renderPairingMatrix(
   const screen =
     $("screen-pairing");
 
-  if (!screen)
+  if (!screen) {
     return;
-
+  }
 
   const card =
     screen.querySelector(
       ".card"
     );
 
-  if (!card)
+  if (!card) {
     return;
-
+  }
 
   card.innerHTML = "";
 
-
-  if (!controllers.length) {
+  if (
+    !controllers.length
+  ) {
 
     card.innerHTML =
       `<div class="meta">
         No controllers detected.
-       </div>`;
+      </div>`;
 
     return;
   }
-
 
   controllers.forEach(
     controller => {
@@ -1519,7 +1894,6 @@ function renderPairingMatrix(
             controller.pairedMac
         );
 
-
       const row =
         document.createElement(
           "div"
@@ -1528,11 +1902,13 @@ function renderPairingMatrix(
       row.className =
         "pair-chain";
 
-
       row.innerHTML = `
 
         <div class="node">
-          ${controller.label || controller.mac}
+          ${
+            controller.label ||
+            controller.mac
+          }
         </div>
 
         <div class="arrow">
@@ -1543,14 +1919,14 @@ function renderPairingMatrix(
           ${
             truck
               ? (
-                truck.label ||
-                truck.mac
-              )
+                  truck.label ||
+                  truck.mac
+                )
               : (
-                controller.pairedMac
-                  ? controller.pairedMac
-                  : "Not paired"
-              )
+                  controller.pairedMac
+                    ? controller.pairedMac
+                    : "Not paired"
+                )
           }
         </div>
 
@@ -1568,11 +1944,12 @@ function renderPairingMatrix(
 
       `;
 
-      card.appendChild(row);
+      card.appendChild(
+        row
+      );
     }
   );
 }
-
 
 // ================================================================
 // PAIR BUTTON
@@ -1586,8 +1963,12 @@ async function pairSelectedDevices() {
   const truck =
     $("pair-truck");
 
-  if (!controller || !truck)
+  if (
+    !controller ||
+    !truck
+  ) {
     return;
+  }
 
   const controllerMac =
     controller.value;
@@ -1595,9 +1976,10 @@ async function pairSelectedDevices() {
   const truckMac =
     truck.value;
 
-  if (!controllerMac ||
-      !truckMac) {
-
+  if (
+    !controllerMac ||
+    !truckMac
+  ) {
     return;
   }
 
@@ -1610,20 +1992,21 @@ async function pairSelectedDevices() {
   );
 }
 
-
 // ================================================================
 // HISTORY
 // ================================================================
 
-function renderHistory(entries) {
+function renderHistory(
+  entries
+) {
 
   state.history =
-    Array.isArray(entries)
+    Array.isArray(
+      entries
+    )
       ? entries
       : [];
 
-
-  // Old table
   const body =
     $("history-body");
 
@@ -1633,11 +2016,15 @@ function renderHistory(entries) {
 
     for (
       const entry
-      of [...state.history].reverse()
+      of [
+        ...state.history
+      ].reverse()
     ) {
 
       const row =
-        document.createElement("tr");
+        document.createElement(
+          "tr"
+        );
 
       const ended =
         entry.endedAt
@@ -1646,9 +2033,10 @@ function renderHistory(entries) {
             ).toLocaleTimeString()
           : "—";
 
-
       row.innerHTML = `
-        <td>${ended}</td>
+        <td>
+          ${ended}
+        </td>
 
         <td>
           ${safeText(
@@ -1674,21 +2062,20 @@ function renderHistory(entries) {
         </td>
       `;
 
-      body.appendChild(row);
+      body.appendChild(
+        row
+      );
     }
   }
 
-
-  // Claude UI
   const historyBox =
     $("historyList");
 
-  if (!historyBox)
+  if (!historyBox) {
     return;
-
+  }
 
   historyBox.innerHTML = "";
-
 
   state.history.forEach(
     entry => {
@@ -1701,18 +2088,18 @@ function renderHistory(entries) {
       card.className =
         "match-card";
 
-
       const winner =
-        entry.winner === "draw"
+        entry.winner ===
+        "draw"
           ? "Draw"
           : entry.winner
             ? `Winner: ${
-                entry.winner === "red"
+                entry.winner ===
+                "red"
                   ? "Red"
                   : "Blue"
               }`
             : "—";
-
 
       const date =
         entry.endedAt
@@ -1721,10 +2108,10 @@ function renderHistory(entries) {
             ).toLocaleString()
           : "—";
 
-
       card.innerHTML = `
 
         <div class="side red">
+
           <div class="tn">
             Red
           </div>
@@ -1740,16 +2127,18 @@ function renderHistory(entries) {
               entry.scoreRed
             )}
           </div>
-        </div>
 
+        </div>
 
         <div class="mid">
 
           Match
 
           ${
-            entry.matchNum != null
-              ? "#" + entry.matchNum
+            entry.matchNum !=
+            null
+              ? "#" +
+                entry.matchNum
               : ""
           }
 
@@ -1764,7 +2153,6 @@ function renderHistory(entries) {
           </span>
 
         </div>
-
 
         <div class="side blue">
 
@@ -1795,7 +2183,6 @@ function renderHistory(entries) {
   );
 }
 
-
 // ================================================================
 // MAIN RENDER
 // ================================================================
@@ -1808,7 +2195,6 @@ function render() {
 
   renderPairingOptions();
 }
-
 
 // ================================================================
 // INITIAL API LOAD
@@ -1823,8 +2209,9 @@ async function loadHistory() {
         "/api/match/history"
       );
 
-    if (!response.ok)
+    if (!response.ok) {
       return;
+    }
 
     const data =
       await response.json();
@@ -1842,14 +2229,12 @@ async function loadHistory() {
   }
 }
 
-
 // ================================================================
 // BUTTON BINDINGS
 // ================================================================
 
 function bindControls() {
 
-  // Referee panel
   const pairButton =
     $("pair-btn");
 
@@ -1861,11 +2246,8 @@ function bindControls() {
     );
   }
 
-
-  // Old/simple UI
   bindOldButtons();
 }
-
 
 // ================================================================
 // AUDIO UNLOCK
@@ -1889,7 +2271,6 @@ document.addEventListener(
     once: true,
   }
 );
-
 
 // ================================================================
 // START

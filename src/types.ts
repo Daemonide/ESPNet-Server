@@ -92,3 +92,28 @@ export type ServerEvent =
   | { type: "light_event"; pattern: LightPattern; rgbHex?: string }
   | { type: "powerup_rejected"; action: "kick" | "emp"; mac: string; reason: string }
   | { type: "history"; entries: MatchHistoryEntry[] };
+
+
+// -----------------------------------------------------------------------------
+// Player Management
+// -----------------------------------------------------------------------------
+
+export interface Player {
+  id: string;
+  name: string;
+  team: Team | null;
+  controllerMac: string | null;
+
+  matches: number;
+  wins: number;
+
+  available: boolean;
+  createdAt: number;
+}
+
+export interface QueuedMatch {
+  id: string;
+  playerRedId: string;
+  playerBlueId: string;
+  createdAt: number;
+}

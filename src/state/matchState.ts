@@ -205,6 +205,33 @@ export class MatchStateManager {
     return this.history;
   }
 
+  async clearHistory(): Promise<void> {
+  this.history = [];
+
+  this.historyStore.save(this.history);
+
+  await this.historyStore.flush();
+}
+
+
+async deleteHistoryEntry(matchId: string): Promise<boolean> {
+  const originalLength = this.history.length;
+
+  this.history = this.history.filter(
+    (entry) => entry.matchId !== matchId,
+  );
+
+  if (this.history.length === originalLength) {
+    return false;
+  }
+
+  this.historyStore.save(this.history);
+
+  await this.historyStore.flush();
+
+  return true;
+}
+
   // ---------------------------------------------------------------------------
   // Start match
   // ---------------------------------------------------------------------------

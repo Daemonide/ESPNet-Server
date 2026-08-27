@@ -1,0 +1,2054 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>RoboSoccer — Concept 1: Robo Arena</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+  :root{
+    --bg:#07080a; --panel:#0f1216; --panel2:#141821; --line:#232a35;
+    --red:#ff3b4e; --red-glow:rgba(255,59,78,.45); --red-dim:#2a1013;
+    --blue:#2fb2ff; --blue-glow:rgba(47,178,255,.45); --blue-dim:#0d2032;
+    --txt:#eef1f6; --sub:#8b93a3; --gold:#ffcf4d; --turf:#0e2116; --green:#3ee06b;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--txt);font-family:'Inter',sans-serif;padding:20px;}
+  h1,h2,h3{font-family:'Rajdhani',sans-serif;}
+  .wrap{max-width:1920px;margin:0 auto;}
+
+  /* NAV */
+  .nav{display:flex;gap:4px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:6px;margin-bottom:16px;width:fit-content;}
+  .nav button{background:transparent;border:none;color:var(--sub);padding:9px 20px;border-radius:7px;
+    font-family:'Rajdhani';font-weight:600;font-size:14px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;}
+  .nav button.active{background:var(--panel2);color:var(--gold);}
+
+
+  .screen{display:none;}
+  .screen.active{display:block;animation:fadein .3s ease;}
+  @keyframes fadein{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
+
+  /* ===== ARENA HERO ===== */
+  .arena{
+    position:relative;border-radius:16px;overflow:hidden;min-height:660px;
+    background:
+      radial-gradient(ellipse 900px 500px at 50% -10%, rgba(255,207,77,.10), transparent 60%),
+      radial-gradient(ellipse 700px 400px at 8% 30%, var(--red-glow) 0%, transparent 55%),
+      radial-gradient(ellipse 700px 400px at 92% 30%, var(--blue-glow) 0%, transparent 55%),
+      linear-gradient(180deg, #0a0d10 0%, var(--turf) 130%);
+    border:1px solid var(--line);
+  }
+  .arena::before{ /* subtle turf shading, no grid */
+    content:"";position:absolute;inset:0;opacity:.5;pointer-events:none;
+    background:radial-gradient(ellipse 1000px 300px at 50% 100%, rgba(62,224,107,.06), transparent 70%);
+  }
+  .pitch-lines{position:absolute;inset:0;z-index:0;width:100%;height:100%;pointer-events:none;opacity:.9;}
+  .goalpost{position:absolute;top:50%;transform:translateY(-50%);width:64px;height:210px;z-index:1;pointer-events:none;}
+  .goalpost.left{left:4px;}
+  .goalpost.right{right:4px;}
+  .goalpost .frame{position:absolute;inset:0;border:4px solid rgba(255,255,255,.4);border-radius:6px;
+    box-shadow:0 0 14px rgba(255,255,255,.12);}
+  .goalpost.left .frame{border-right:none;border-radius:6px 0 0 6px;}
+  .goalpost.right .frame{border-left:none;border-radius:0 6px 6px 0;}
+  .goalpost .net{position:absolute;inset:4px;opacity:.55;
+    background-image:
+      repeating-linear-gradient(0deg, rgba(255,255,255,.16) 0 1px, transparent 1px 11px),
+      repeating-linear-gradient(90deg, rgba(255,255,255,.16) 0 1px, transparent 1px 11px);}
+  .goalpost.left .net{background-position:-2px 0;}
+  .goalpost.right .net{background-position:2px 0;}
+  .vignette{position:absolute;inset:0;z-index:1;pointer-events:none;
+    background:radial-gradient(ellipse 1100px 700px at 50% 40%, transparent 55%, rgba(0,0,0,.55) 100%);}
+  .grain{position:absolute;inset:0;z-index:1;pointer-events:none;opacity:.05;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");}
+  .beam{position:absolute;top:-10%;width:340px;height:140%;pointer-events:none;z-index:1;opacity:.35;
+    background:linear-gradient(180deg, rgba(255,255,255,.14), transparent 70%);
+    clip-path:polygon(48% 0,52% 0,100% 100%,0 100%);transform-origin:top center;}
+  .beam-a{left:2%;animation:beamsweep 9s ease-in-out infinite;}
+  .beam-b{right:2%;animation:beamsweep 11s ease-in-out infinite reverse;}
+  @keyframes beamsweep{0%,100%{transform:rotate(-8deg);}50%{transform:rotate(8deg);}}
+  .dust{position:absolute;bottom:74px;width:6px;height:6px;border-radius:50%;
+    background:rgba(230,225,210,.5);z-index:2;pointer-events:none;filter:blur(1px);}
+  .dust1{left:16%;animation:dustrise 3.2s ease-out infinite;}
+  .dust2{left:20%;animation:dustrise 3.6s ease-out infinite 1.1s;}
+  .dust3{right:16%;animation:dustrise 3.4s ease-out infinite .6s;}
+  .dust4{right:21%;animation:dustrise 3s ease-out infinite 1.8s;}
+  @keyframes dustrise{0%{transform:translate(0,0) scale(.6);opacity:0;}
+    20%{opacity:.6;} 100%{transform:translate(-14px,-46px) scale(1.4);opacity:0;}}
+  .led-strip{position:absolute;left:0;right:0;bottom:0;height:6px;z-index:2;
+    background:linear-gradient(90deg,var(--red),var(--gold),var(--blue));opacity:.8;}
+  .arena.intense .led-strip{animation:ledsweep 1.2s linear infinite;background:linear-gradient(90deg,var(--red),var(--gold),var(--red),var(--gold));background-size:200% 100%;}
+  @keyframes ledsweep{to{background-position:200% 0;}}
+  .arena.goal{animation:shake .5s ease;}
+  @keyframes shake{0%,100%{transform:translateX(0);}20%{transform:translateX(-6px);}
+    40%{transform:translateX(5px);}60%{transform:translateX(-3px);}80%{transform:translateX(2px);}}
+  .confetti{position:absolute;inset:0;z-index:6;pointer-events:none;overflow:hidden;display:none;}
+  .arena.goal .confetti{display:block;}
+  .confetti i{position:absolute;top:-10%;width:8px;height:14px;opacity:.9;animation:confettifall 1.6s ease-in forwards;}
+  @keyframes confettifall{0%{transform:translateY(0) rotate(0deg);opacity:1;}
+    100%{transform:translateY(640px) rotate(420deg);opacity:0;}}
+
+  .topbar{position:relative;z-index:3;display:flex;justify-content:space-between;align-items:center;padding:20px 30px 0;}
+  .brand{font-family:'Rajdhani';font-weight:700;font-size:22px;letter-spacing:6px;text-transform:uppercase;line-height:1;}
+  .brand span{color:var(--gold);}
+  .status-pill{display:flex;align-items:center;gap:8px;background:rgba(15,18,22,.7);border:1px solid var(--line);
+    padding:7px 16px;border-radius:999px;font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--green);}
+  .dot.live{background:var(--red);box-shadow:0 0 8px var(--red);animation:pulse 1.2s infinite;}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+  .conn{font-size:11px;color:var(--sub);display:flex;gap:16px;}
+
+  .intense-banner{position:relative;z-index:3;text-align:center;height:0;overflow:visible;}
+  .intense-banner .tag{display:none;}
+  .arena.intense .intense-banner .tag{
+    display:inline-block;margin-top:6px;background:linear-gradient(90deg,var(--red),var(--gold),var(--red));
+    background-size:200% auto;animation:sheen 2.2s linear infinite;color:#1a0000;font-family:'Rajdhani';
+    font-weight:700;font-size:22px;letter-spacing:6px;padding:8px 34px;border-radius:6px;text-transform:uppercase;
+    box-shadow:0 0 34px rgba(255,59,78,.55);
+  }
+  @keyframes sheen{to{background-position:200% center;}}
+  .arena.intense{animation:arenapulse 1.6s ease-in-out infinite;}
+  @keyframes arenapulse{
+    0%,100%{box-shadow:inset 0 0 0 1px rgba(255,59,78,.3),0 0 40px rgba(255,59,78,.1);}
+    50%{box-shadow:inset 0 0 0 2px rgba(255,59,78,.65),0 0 80px rgba(255,59,78,.25);}
+  }
+
+  .goal-flash{position:absolute;inset:0;z-index:5;display:none;align-items:center;justify-content:center;
+    background:rgba(0,0,0,.35);}
+  .arena.goal .goal-flash{display:flex;}
+  .goal-text{font-family:'Rajdhani';font-weight:700;font-size:110px;letter-spacing:6px;text-transform:uppercase;
+    text-shadow:0 0 50px currentColor;}
+  .arena.goal.goal-red .goal-text{color:var(--red);}
+  .arena.goal.goal-blue .goal-text{color:var(--blue);}
+
+  .field{position:relative;z-index:2;display:grid;grid-template-columns:1fr 260px 1fr;align-items:center;
+    gap:18px;padding:10px 20px 6px;}
+
+  .truckside{text-align:center;position:relative;}
+  .tname{font-family:'Rajdhani';font-weight:700;font-size:22px;letter-spacing:4px;text-transform:uppercase;}
+  .truckside.red .tname{color:var(--red);text-shadow:0 0 16px rgba(255,59,78,.5);}
+  .truckside.blue .tname{color:var(--blue);text-shadow:0 0 16px rgba(47,178,255,.5);}
+  .pname{font-size:13px;color:var(--sub);font-weight:600;letter-spacing:2px;text-transform:uppercase;margin:2px 0 8px;}
+  .truck-wrap{max-width:280px;margin:0 auto;animation:truckidle 2.8s ease-in-out infinite;}
+  .truckside.red .truck-wrap{transform:rotate(-1.5deg);}
+  .truckside.blue .truck-wrap{transform:rotate(1.5deg);animation-delay:.4s;}
+  @keyframes truckidle{0%,100%{translate:0 0;}50%{translate:0 -5px;}}
+  .truck-svg{width:100%;height:auto;filter:drop-shadow(0 8px 16px rgba(0,0,0,.55));display:block;}
+  .truckside.red .truck-svg{color:var(--red);}
+  .truckside.blue .truck-svg{color:var(--blue);}
+  .truckside.blue .truck-svg{transform:scaleX(-1);}
+  .tire{fill:#1a1d22;} .rim{fill:#454b57;} .glass{fill:rgba(180,220,255,.35);} .light{fill:var(--gold);
+    animation:hlpulse 1.7s ease-in-out infinite;}
+  @keyframes hlpulse{0%,100%{opacity:1;}50%{opacity:.45;}}
+  .spokes{transform-box:fill-box;transform-origin:center;animation:wheelspin 2.4s linear infinite;}
+  .arena.intense .spokes{animation-duration:.5s;}
+  @keyframes wheelspin{to{transform:rotate(360deg);}}
+  .arena.intense .truck-svg{filter:drop-shadow(0 0 20px currentColor) drop-shadow(0 8px 18px rgba(0,0,0,.6));}
+  .score{font-family:'Rajdhani';font-weight:700;font-size:120px;line-height:1;color:#fff;margin-top:6px;
+    transition:transform .15s ease;}
+  .score.pop{animation:pop .45s ease;}
+  @keyframes pop{0%{transform:scale(1);}30%{transform:scale(1.32);}100%{transform:scale(1);}}
+  .powerups{display:flex;gap:8px;justify-content:center;margin-top:12px;}
+  .pw{font-size:10px;padding:4px 10px;border-radius:999px;border:1px solid var(--line);color:var(--sub);
+    text-transform:uppercase;letter-spacing:1px;font-weight:600;background:rgba(15,18,22,.6);}
+  .pw.ready{color:var(--gold);border-color:rgba(255,207,77,.4);}
+
+  .center{text-align:center;position:relative;z-index:2;}
+  .ball-wrap{width:56px;height:56px;margin:0 auto 10px;animation:ballbob 2.6s ease-in-out infinite;position:relative;}
+  .ball{width:56px;height:56px;border-radius:50%;position:relative;animation:ballspin 4s linear infinite;
+    background:radial-gradient(circle at 35% 30%, #fff, #d8dde3 60%, #aab0ba 100%);
+    box-shadow:0 6px 14px rgba(0,0,0,.5), inset 0 -6px 10px rgba(0,0,0,.15);}
+  @keyframes ballbob{0%,100%{transform:translateY(0);}50%{transform:translateY(-7px);}}
+  @keyframes ballspin{to{transform:rotate(360deg);}}
+  .ball::before,.ball::after{content:"";position:absolute;background:#20242b;}
+  .ball::before{width:16px;height:16px;border-radius:3px;top:18px;left:20px;transform:rotate(20deg);}
+  .ball::after{width:10px;height:10px;border-radius:2px;top:8px;left:8px;transform:rotate(10deg);}
+
+  /* ===== GOAL KICK ANIMATION ===== */
+  .ball-wrap.kicking{animation:none;}
+  .ball-wrap.kicking .ball{animation:ballKickSpin .85s cubic-bezier(.3,.7,.35,1) forwards;}
+  @keyframes ballKickSpin{
+    0%{transform:translate(0,0) scale(1) rotate(0deg);}
+    55%{transform:translate(calc(var(--kick-dx,0px)*.8), -22px) scale(.55) rotate(520deg);}
+    100%{transform:translate(var(--kick-dx,0px), 4px) scale(.22) rotate(760deg);opacity:0;}
+  }
+  .ball-wrap.returning{animation:none;}
+  .ball-wrap.returning .ball{animation:ballReturnPop .45s ease-out forwards;}
+  @keyframes ballReturnPop{
+    0%{transform:translate(0,0) scale(.2);opacity:0;}
+    70%{transform:translate(0,0) scale(1.15);opacity:1;}
+    100%{transform:translate(0,0) scale(1);opacity:1;}
+  }
+  .goalpost .impact{position:absolute;top:50%;left:50%;width:14px;height:14px;border-radius:50%;
+    background:radial-gradient(circle, #fff 0%, rgba(255,255,255,.6) 40%, transparent 72%);
+    transform:translate(-50%,-50%) scale(.2);opacity:0;pointer-events:none;}
+  .goalpost.flash .impact{animation:goalImpact .55s ease-out;}
+  @keyframes goalImpact{
+    0%{opacity:1;transform:translate(-50%,-50%) scale(.2);}
+    100%{opacity:0;transform:translate(-50%,-50%) scale(4.5);}
+  }
+  .goalpost.flash .frame{animation:frameFlash .55s ease-out;}
+  @keyframes frameFlash{0%{box-shadow:0 0 4px 2px rgba(255,255,255,.9);}100%{box-shadow:0 0 14px rgba(255,255,255,.12);}}
+
+  .truckside.red.kicking .truck-wrap{animation:kickLungeRed .6s ease;}
+  .truckside.blue.kicking .truck-wrap{animation:kickLungeBlue .6s ease;}
+  @keyframes kickLungeRed{
+    0%{transform:rotate(-1.5deg) translateX(0) scale(1);}
+    25%{transform:rotate(4deg) translateX(22px) scale(1.06);}
+    55%{transform:rotate(-3deg) translateX(-6px) scale(1);}
+    100%{transform:rotate(-1.5deg) translateX(0) scale(1);}
+  }
+  @keyframes kickLungeBlue{
+    0%{transform:rotate(1.5deg) translateX(0) scale(1);}
+    25%{transform:rotate(-4deg) translateX(-22px) scale(1.06);}
+    55%{transform:rotate(3deg) translateX(6px) scale(1);}
+    100%{transform:rotate(1.5deg) translateX(0) scale(1);}
+  }
+  .truckside.kicking .truck-svg{filter:drop-shadow(0 0 16px currentColor) drop-shadow(0 8px 18px rgba(0,0,0,.6));}
+  .vs{font-family:'Rajdhani';font-size:14px;color:var(--sub);letter-spacing:5px;text-transform:uppercase;margin-bottom:4px;}
+  .timer{font-family:'Rajdhani';font-weight:700;font-size:94px;line-height:1;color:#fff;}
+  .timer .colon{animation:blink 1s steps(1) infinite;}
+  @keyframes blink{50%{opacity:0;}}
+  .arena.intense .timer{color:var(--red);text-shadow:0 0 40px rgba(255,59,78,.85);animation:tick 1s infinite;}
+  @keyframes tick{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}
+  .matchstate{font-size:13px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--sub);margin-top:8px;}
+  .matchstate.live{color:var(--green);}
+
+  .ticker{position:relative;z-index:2;margin:14px 20px 0;border-top:1px solid var(--line);padding:12px 10px;
+    display:flex;gap:22px;overflow:hidden;font-size:12px;color:var(--sub);}
+  .ticker b{color:var(--txt);}
+
+  /* referee panel — permanent, docked above the arena (this is what drives the live match) */
+  .ref-panel{position:sticky;top:10px;z-index:30;margin-bottom:16px;}
+  .dock{background:var(--panel);border:1px solid rgba(255,207,77,.4);border-radius:12px;padding:16px 22px;
+    box-shadow:0 0 0 1px rgba(255,207,77,.12),0 10px 30px rgba(0,0,0,.4);}
+  .dockhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;}
+  .dockhead h3{font-size:13px;color:var(--gold);text-transform:uppercase;letter-spacing:2px;font-weight:700;
+    display:flex;align-items:center;gap:8px;}
+  .dockhead h3 .liveDotSmall{width:8px;height:8px;border-radius:50%;background:var(--gold);flex-shrink:0;}
+  .dockhead .dockstate{font-size:11px;color:var(--sub);text-transform:uppercase;letter-spacing:1px;font-weight:600;}
+  .dockhead .dockstate b{color:var(--txt);}
+  .dockrow{display:flex;gap:22px;flex-wrap:wrap;}
+  .grp{display:flex;flex-direction:column;gap:8px;}
+  .grp .gl{font-size:10px;color:var(--sub);text-transform:uppercase;letter-spacing:1px;}
+  .btns{display:flex;gap:8px;flex-wrap:wrap;}
+  .btn{background:var(--panel2);border:1px solid var(--line);color:var(--txt);padding:11px 18px;border-radius:9px;
+    font-size:13px;font-weight:600;cursor:pointer;position:relative;}
+  .btn::after{content:"";position:absolute;inset:0;border-radius:9px;box-shadow:inset 0 1px 0 rgba(255,255,255,.06);}
+  .btn:active{transform:translateY(1px);}
+  .btn.red{border-color:rgba(255,59,78,.4);color:var(--red);}
+  .btn.blue{border-color:rgba(47,178,255,.4);color:var(--blue);}
+  .btn.danger{background:var(--red);color:#fff;border-color:var(--red);}
+  .btn.warn{background:var(--gold);color:#1a1400;border-color:var(--gold);}
+  .btn:disabled{opacity:.4;cursor:not-allowed;}
+  .btn:disabled:active{transform:none;}
+
+  /* ===== SECONDARY SCREENS ===== */
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px;}
+  .card h4{font-size:11px;color:var(--sub);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:14px;font-weight:700;}
+  .device{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid var(--line);gap:10px;}
+  .device:last-child{border-bottom:none;}
+  .device .name{font-size:13px;font-weight:600;}
+  .device .meta{font-size:11px;color:var(--sub);}
+  .mini-truck{width:56px;height:34px;flex-shrink:0;}
+  .stat-online{font-size:11px;color:var(--green);font-weight:700;text-transform:uppercase;}
+  .stat-offline{font-size:11px;color:var(--sub);font-weight:700;text-transform:uppercase;}
+
+  .pair-chain{display:flex;align-items:center;justify-content:space-between;padding:16px 0;border-bottom:1px solid var(--line);}
+  .pair-chain:last-child{border-bottom:none;}
+  .node{display:flex;align-items:center;gap:10px;background:var(--panel2);border:1px solid var(--line);
+    border-radius:9px;padding:8px 16px;font-size:13px;font-weight:600;min-width:190px;}
+  .node .mini-truck{width:44px;height:26px;}
+  .arrow{color:var(--gold);font-size:20px;}
+
+  .match-card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px 22px;
+    display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+  .match-card .mid{text-align:center;font-family:'Rajdhani';color:var(--sub);font-size:12px;letter-spacing:2px;text-transform:uppercase;}
+  .match-card .side{text-align:center;min-width:140px;}
+  .match-card .side .tn{font-family:'Rajdhani';font-weight:700;font-size:16px;letter-spacing:2px;}
+  .match-card .side.red .tn{color:var(--red);} .match-card .side.blue .tn{color:var(--blue);}
+  .match-card .side .sc{font-family:'Rajdhani';font-weight:700;font-size:36px;color:#fff;}
+  .match-card .winner{font-size:11px;color:var(--gold);font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-top:4px;}
+
+  .audio-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--line);}
+  .audio-row:last-child{border-bottom:none;}
+  .audio-row .l{font-size:12px;color:var(--sub);text-transform:uppercase;letter-spacing:1px;}
+  .audio-row .v{font-size:14px;font-weight:600;}
+  .track{display:flex;align-items:center;gap:14px;padding:16px;background:var(--panel2);border-radius:10px;margin-bottom:14px;}
+  .track .art{width:46px;height:46px;border-radius:8px;background:linear-gradient(135deg,var(--red),var(--blue));}
+  .track .tt{font-size:13px;font-weight:600;} .track .ta{font-size:11px;color:var(--sub);}
+
+  .section-title{margin:8px 0 14px;display:flex;align-items:center;gap:12px;}
+  .section-title h2{font-size:20px;letter-spacing:1px;}
+  .footer-note{margin-top:30px;text-align:center;color:var(--sub);font-size:11px;letter-spacing:1px;}
+
+  /* ===== FORMS / PLAYERS / SETTINGS ===== */
+  .form-row{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;}
+  .form-row label{font-size:11px;color:var(--sub);text-transform:uppercase;letter-spacing:1px;font-weight:600;}
+  .form-row input,.form-row select{background:var(--panel2);border:1px solid var(--line);color:var(--txt);
+    padding:10px 12px;border-radius:8px;font-family:'Inter';font-size:13px;width:100%;}
+  .form-row input:focus,.form-row select:focus{outline:none;border-color:var(--gold);}
+  .form-row input[type="range"]{padding:0;accent-color:var(--gold);}
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 18px;}
+  .btn-primary{background:var(--gold);color:#1a1400;border:none;padding:11px 22px;border-radius:9px;font-weight:700;
+    font-size:13px;cursor:pointer;text-transform:uppercase;letter-spacing:1px;font-family:'Rajdhani';}
+  .btn-primary:active{transform:translateY(1px);}
+  .roster-table{width:100%;border-collapse:collapse;}
+  .roster-table th{text-align:left;font-size:10px;color:var(--sub);text-transform:uppercase;letter-spacing:1px;
+    padding:8px 10px;border-bottom:1px solid var(--line);}
+  .roster-table td{padding:10px;border-bottom:1px solid var(--line);font-size:13px;}
+  .team-badge{padding:3px 10px;border-radius:999px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;}
+  .team-badge.red{background:var(--red-dim);color:var(--red);}
+  .team-badge.blue{background:var(--blue-dim);color:var(--blue);}
+  .team-badge.bench{background:var(--panel2);color:var(--sub);}
+  .icon-btn{background:none;border:none;color:var(--sub);cursor:pointer;font-size:12px;font-weight:600;
+    text-transform:uppercase;letter-spacing:.5px;}
+  .icon-btn:hover{color:var(--red);}
+  .toggle-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--line);
+    font-size:13px;}
+  .toggle-row:last-child{border-bottom:none;}
+  .switch{position:relative;width:42px;height:24px;background:var(--panel2);border:1px solid var(--line);
+    border-radius:999px;cursor:pointer;flex-shrink:0;}
+  .switch.on{background:var(--gold);border-color:var(--gold);}
+  .switch .knob{position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#fff;
+    transition:left .2s ease;}
+  .switch.on .knob{left:20px;}
+  .save-bar{display:flex;justify-content:flex-end;align-items:center;gap:14px;margin-top:6px;}
+  .save-msg{font-size:12px;color:var(--green);font-weight:600;opacity:0;transition:opacity .3s ease;}
+  .save-msg.show{opacity:1;}
+  .queue-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--line);
+    flex-wrap:wrap;gap:10px;}
+  .queue-row:last-child{border-bottom:none;}
+  .queue-names{font-family:'Rajdhani';font-weight:700;font-size:15px;letter-spacing:.5px;}
+  .queue-names .r{color:var(--red);} .queue-names .b{color:var(--blue);} .queue-names .vs{color:var(--sub);font-size:12px;}
+  .queue-actions{display:flex;gap:8px;}
+  .btn.small{padding:7px 14px;font-size:12px;}
+  .queue-warn{background:var(--red-dim);border:1px solid rgba(255,59,78,.4);border-radius:8px;padding:10px 14px;
+    width:100%;font-size:12px;color:var(--red);display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  .queue-warn select{background:var(--panel2);border:1px solid var(--line);color:var(--txt);padding:6px 10px;
+    border-radius:6px;font-size:12px;}
+  .status-switch{width:36px;height:20px;}
+  .status-switch .knob{width:14px;height:14px;}
+  .status-switch.on .knob{left:18px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="nav">
+    <button class="active" id="navLiveBtn" onclick="showScreen('live',this)">Live</button>
+    <button onclick="showScreen('fleet',this)">Fleet</button>
+    <button onclick="showScreen('pairing',this)">Pairing</button>
+    <button onclick="showScreen('players',this)">Players</button>
+    <button onclick="showScreen('history',this)">History</button>
+    <button onclick="showScreen('audio',this)">Audio</button>
+    <button onclick="showScreen('settings',this)">Settings</button>
+  </div>
+
+  <!-- ============ LIVE SCREEN ============ -->
+  <div class="screen active" id="screen-live">
+
+    <!-- ============ REFEREE PANEL — permanent, always visible, drives the real live match ============ -->
+    <div class="ref-panel" id="refPanel">
+      <div class="dock">
+        <div class="dockhead">
+          <h3><span class="liveDotSmall"></span>Referee control</h3>
+          <div class="dockstate">Score <b id="refScoreLine">03 – 03</b> &nbsp;·&nbsp; Clock <b id="refClockLine">15:00</b> &nbsp;·&nbsp; <b id="refStateLine">Match ready</b></div>
+        </div>
+        <div class="dockrow">
+          <div class="grp"><div class="gl">Match</div><div class="btns">
+            <button class="btn" onclick="refStart()">▶ Start</button>
+            <button class="btn" onclick="refPause()">⏸ Pause</button>
+            <button class="btn" onclick="refResume()">⏵ Resume</button>
+            <button class="btn danger" onclick="refReset()">Reset ⚠</button>
+          </div></div>
+          <div class="grp"><div class="gl">Score</div><div class="btns">
+            <button class="btn red" onclick="refGoal('red')">+1 Goal Red</button>
+            <button class="btn blue" onclick="refGoal('blue')">+1 Goal Blue</button>
+            <button class="btn" onclick="refUndoGoal()">Undo last goal</button>
+          </div></div>
+          <div class="grp"><div class="gl">Timer</div><div class="btns">
+            <button class="btn" onclick="refAdjustTimer(30000)">+30 sec</button>
+            <button class="btn" onclick="refAdjustTimer(-30000)">-30 sec</button>
+            <button class="btn" onclick="refAdjustTimer(60000)">+1 min</button>
+            <button class="btn" onclick="refAdjustTimer(-60000)">-1 min</button>
+          </div></div>
+          <div class="grp"><div class="gl">Power-ups (referee override / no-hardware testing)</div><div class="btns">
+            <button class="btn red" onclick="refTriggerKick('red')">Fire Red Kicker</button>
+            <button class="btn blue" onclick="refTriggerKick('blue')">Fire Blue Kicker</button>
+            <button class="btn red" onclick="refTriggerEmp('red')">EMP Red → Blue</button>
+            <button class="btn blue" onclick="refTriggerEmp('blue')">EMP Blue → Red</button>
+          </div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="arena" id="arena">
+      <svg class="pitch-lines" viewBox="0 0 1400 660" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+        <line x1="700" y1="20" x2="700" y2="640" stroke="rgba(255,255,255,.16)" stroke-width="3"/>
+        <circle cx="700" cy="330" r="95" fill="none" stroke="rgba(255,255,255,.16)" stroke-width="3"/>
+        <circle cx="700" cy="330" r="4" fill="rgba(255,255,255,.3)"/>
+        <rect x="18" y="215" width="150" height="230" fill="none" stroke="rgba(255,255,255,.16)" stroke-width="3"/>
+        <rect x="18" y="270" width="65" height="120" fill="none" stroke="rgba(255,255,255,.16)" stroke-width="3"/>
+        <path d="M168,275 A55,55 0 0,1 168,385" fill="none" stroke="rgba(255,255,255,.14)" stroke-width="3"/>
+        <rect x="1232" y="215" width="150" height="230" fill="none" stroke="rgba(255,255,255,.16)" stroke-width="3"/>
+        <rect x="1317" y="270" width="65" height="120" fill="none" stroke="rgba(255,255,255,.16)" stroke-width="3"/>
+        <path d="M1232,275 A55,55 0 0,0 1232,385" fill="none" stroke="rgba(255,255,255,.14)" stroke-width="3"/>
+        <path d="M18,20 A24,24 0 0,1 42,20" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="2"/>
+        <path d="M18,640 A24,24 0 0,0 42,640" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="2"/>
+        <path d="M1382,20 A24,24 0 0,0 1358,20" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="2"/>
+        <path d="M1382,640 A24,24 0 0,1 1358,640" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="2"/>
+      </svg>
+      <div class="goalpost left"><div class="frame"></div><div class="net"></div><div class="impact"></div></div>
+      <div class="goalpost right"><div class="frame"></div><div class="net"></div><div class="impact"></div></div>
+      <div class="beam beam-a"></div>
+      <div class="beam beam-b"></div>
+      <div class="vignette"></div>
+      <div class="grain"></div>
+      <span class="dust dust1"></span><span class="dust dust2"></span>
+      <span class="dust dust3"></span><span class="dust dust4"></span>
+      <div class="confetti" id="confetti"></div>
+      <div class="led-strip"></div>
+      <div class="topbar">
+        <div class="brand">Robo<span>Soccer</span></div>
+        <div class="status-pill"><span class="dot" id="statedot"></span><span id="statelabel">Match ready</span></div>
+        <div class="conn"><span id="connStatus">● Connecting…</span><span id="connDevices">—</span></div>
+      </div>
+
+      <div class="intense-banner"><span class="tag">⚡ Intense mode — sudden goal</span></div>
+      <div class="goal-flash"><div class="goal-text" id="goaltext"></div></div>
+
+      <div class="field">
+        <div class="truckside red">
+          <div class="tname">Red</div>
+          <div class="pname" id="redPname">—</div>
+          <div class="truck-wrap">
+          <svg class="truck-svg" viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
+            <circle class="tire" cx="70" cy="132" r="46"/><circle class="rim" cx="70" cy="132" r="17"/>
+            <g class="spokes"><line x1="70" y1="118" x2="70" y2="146" stroke="#6b7280" stroke-width="3"/><line x1="56" y1="132" x2="84" y2="132" stroke="#6b7280" stroke-width="3"/><line x1="60" y1="122" x2="80" y2="142" stroke="#6b7280" stroke-width="3"/><line x1="60" y1="142" x2="80" y2="122" stroke="#6b7280" stroke-width="3"/></g>
+            <circle class="tire" cx="230" cy="132" r="46"/><circle class="rim" cx="230" cy="132" r="17"/>
+            <g class="spokes" style="transform-origin:230px 132px"><line x1="230" y1="118" x2="230" y2="146" stroke="#6b7280" stroke-width="3"/><line x1="216" y1="132" x2="244" y2="132" stroke="#6b7280" stroke-width="3"/><line x1="220" y1="122" x2="240" y2="142" stroke="#6b7280" stroke-width="3"/><line x1="220" y1="142" x2="240" y2="122" stroke="#6b7280" stroke-width="3"/></g>
+            <rect x="55" y="72" width="210" height="44" rx="10" fill="currentColor"/>
+            <path d="M100 72 L128 32 L208 32 L233 72 Z" fill="currentColor"/>
+            <path d="M112 66 L134 40 L196 40 L210 66 Z" class="glass"/>
+            <path d="M120 32 L120 12 L216 12 L216 32" fill="none" stroke="currentColor" stroke-width="6"/>
+            <rect x="246" y="82" width="15" height="10" rx="2" class="light"/>
+            <rect x="44" y="46" width="10" height="30" fill="currentColor"/>
+            <rect x="26" y="40" width="36" height="8" rx="2" fill="currentColor"/>
+          </svg>
+          </div>
+          <div class="score" id="redscore">00</div>
+          <div class="powerups"><div class="pw ready" id="redkicker">Kicker · Ready</div><div class="pw ready" id="redemp">EMP · Ready</div></div>
+        </div>
+
+        <div class="center">
+          <div class="ball-wrap" id="ballWrap"><div class="ball"></div></div>
+          <div class="vs" id="roundLabel">Round 1</div>
+          <div class="timer" id="timer">00<span class="colon">:</span>00</div>
+          <div class="matchstate" id="matchstate">Match ready</div>
+        </div>
+
+        <div class="truckside blue">
+          <div class="tname">Blue</div>
+          <div class="pname" id="bluePname">—</div>
+          <div class="truck-wrap">
+          <svg class="truck-svg" viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
+            <circle class="tire" cx="70" cy="132" r="46"/><circle class="rim" cx="70" cy="132" r="17"/>
+            <g class="spokes"><line x1="70" y1="118" x2="70" y2="146" stroke="#6b7280" stroke-width="3"/><line x1="56" y1="132" x2="84" y2="132" stroke="#6b7280" stroke-width="3"/><line x1="60" y1="122" x2="80" y2="142" stroke="#6b7280" stroke-width="3"/><line x1="60" y1="142" x2="80" y2="122" stroke="#6b7280" stroke-width="3"/></g>
+            <circle class="tire" cx="230" cy="132" r="46"/><circle class="rim" cx="230" cy="132" r="17"/>
+            <g class="spokes" style="transform-origin:230px 132px"><line x1="230" y1="118" x2="230" y2="146" stroke="#6b7280" stroke-width="3"/><line x1="216" y1="132" x2="244" y2="132" stroke="#6b7280" stroke-width="3"/><line x1="220" y1="122" x2="240" y2="142" stroke="#6b7280" stroke-width="3"/><line x1="220" y1="142" x2="240" y2="122" stroke="#6b7280" stroke-width="3"/></g>
+            <rect x="55" y="72" width="210" height="44" rx="10" fill="currentColor"/>
+            <path d="M100 72 L128 32 L208 32 L233 72 Z" fill="currentColor"/>
+            <path d="M112 66 L134 40 L196 40 L210 66 Z" class="glass"/>
+            <path d="M120 32 L120 12 L216 12 L216 32" fill="none" stroke="currentColor" stroke-width="6"/>
+            <rect x="246" y="82" width="15" height="10" rx="2" class="light"/>
+            <rect x="44" y="46" width="10" height="30" fill="currentColor"/>
+            <rect x="26" y="40" width="36" height="8" rx="2" fill="currentColor"/>
+          </svg>
+          </div>
+          <div class="score" id="bluescore">00</div>
+          <div class="powerups"><div class="pw ready" id="bluekicker">Kicker · Ready</div><div class="pw ready" id="blueemp">EMP · Ready</div></div>
+        </div>
+      </div>
+
+      <div class="ticker" id="ticker">
+        <span id="tickerEmpty" style="color:var(--sub);">No events yet — actions will appear here as they happen.</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ============ FLEET ============ -->
+  <div class="screen" id="screen-fleet">
+    <div class="section-title"><h2>Fleet health</h2></div>
+    <div class="grid3">
+      <div class="card"><h4>Controllers</h4>
+        <div id="fleetControllers"><div style="font-size:12px;color:var(--sub);">Loading…</div></div>
+      </div>
+      <div class="card"><h4>Trucks</h4>
+        <div id="fleetTrucks"><div style="font-size:12px;color:var(--sub);">Loading…</div></div>
+      </div>
+      <div class="card"><h4>Arena lighting</h4>
+        <div id="fleetLighting"><div style="font-size:12px;color:var(--sub);">Loading…</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ PAIRING ============ -->
+  <div class="screen" id="screen-pairing">
+    <div class="section-title"><h2>Pairing matrix</h2></div>
+    <div class="card">
+      <div id="pairingList"><div style="font-size:12px;color:var(--sub);">Loading…</div></div>
+    </div>
+  </div>
+
+  <!-- ============ PLAYERS ============ -->
+  <div class="screen" id="screen-players">
+    <div class="section-title"><h2>Players</h2></div>
+
+    <div class="card" style="margin-bottom:18px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+      <div>
+        <div style="font-size:11px;color:var(--sub);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Currently in arena</div>
+        <div style="font-family:'Rajdhani';font-weight:700;font-size:18px;letter-spacing:1px;">
+          <span style="color:var(--red)" id="currentRedName">—</span>
+          <span style="color:var(--sub);font-weight:600;"> vs </span>
+          <span style="color:var(--blue)" id="currentBlueName">—</span>
+        </div>
+      </div>
+      <button class="btn-primary" onclick="showScreen('live', document.getElementById('navLiveBtn'))">Go to live screen</button>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <h4>Add player</h4>
+        <div class="form-row"><label>Player name</label><input type="text" id="newPlayerName" placeholder="e.g. Kabir"></div>
+        <div class="form-grid">
+          <div class="form-row"><label>Team</label>
+            <select id="newPlayerTeam">
+              <option value="red">Red</option>
+              <option value="blue">Blue</option>
+              <option value="bench">Bench</option>
+            </select>
+          </div>
+          <div class="form-row"><label>Controller</label>
+            <select id="newPlayerController">
+              <option>Controller 1 · Red</option>
+              <option>Controller 2 · Blue</option>
+              <option>Controller 3 · Sub</option>
+              <option>—</option>
+            </select>
+          </div>
+        </div>
+        <div class="toggle-row" style="border-bottom:none;padding-top:0;">
+          <div>Available to play</div>
+          <div class="switch on" id="newPlayerAvailable" onclick="toggleSwitch(this)"><div class="knob"></div></div>
+        </div>
+        <button class="btn-primary" onclick="addPlayer()" style="margin-top:8px;">+ Add player</button>
+      </div>
+
+      <div class="card">
+        <h4>Set up next match</h4>
+        <div class="form-grid">
+          <div class="form-row"><label>Red player</label><select id="matchRedPlayer"></select></div>
+          <div class="form-row"><label>Blue player</label><select id="matchBluePlayer"></select></div>
+        </div>
+        <div id="setupWarning" style="display:none;font-size:12px;color:var(--gold);margin:-4px 0 12px;">
+          ⚠ Only players marked "Available" show up here — toggle status in the roster below.
+        </div>
+        <div id="setupError" style="display:none;font-size:12px;color:var(--red);margin:-4px 0 12px;"></div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <button class="btn-primary" onclick="startMatchNow()">▶ Start this match now</button>
+          <button class="btn" onclick="addToQueue()">+ Add to queue</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:18px;">
+      <h4>Match queue · what's coming up</h4>
+      <div id="queueList"></div>
+      <div id="queueEmpty" style="font-size:13px;color:var(--sub);padding:6px 0;display:none;">No matches queued yet — set one up above.</div>
+    </div>
+
+    <div class="card" style="margin-top:18px;">
+      <h4>Roster · saved players</h4>
+      <table class="roster-table">
+        <thead><tr><th>Name</th><th>Team</th><th>Controller</th><th>Matches</th><th>Wins</th><th>Status</th><th></th></tr></thead>
+        <tbody id="playersBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ============ HISTORY ============ -->
+  <div class="screen" id="screen-history">
+    <div class="section-title"><h2>Match history</h2></div>
+    <div id="historyList"></div>
+  </div>
+
+  <!-- ============ AUDIO ============ -->
+  <div class="screen" id="screen-audio">
+    <div class="section-title"><h2>Audio / Spotify</h2></div>
+    <div class="grid2">
+      <div class="card"><h4>Playback</h4>
+        <div id="audioPlayback"><div style="font-size:12px;color:var(--sub);">Loading…</div></div>
+      </div>
+      <div class="card"><h4>Event sounds</h4>
+        <div id="audioEventSounds"><div style="font-size:12px;color:var(--sub);">Loading…</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ SETTINGS ============ -->
+  <div class="screen" id="screen-settings">
+    <div class="section-title"><h2>Game settings</h2></div>
+    <div class="card" style="margin-bottom:16px;">
+      <div style="font-size:12px;color:var(--sub);">
+        Your backend currently reads all of these from <code>.env</code> at server start
+        (see <code>ARCHITECTURE.md</code> §2 / <code>.env.example</code>) — there's no live
+        settings API yet. This form is a preview only; "Save" won't persist anything
+        until you add a settings endpoint (see BACKEND_TODO.md).
+      </div>
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <h4>Match rules</h4>
+        <div class="form-grid">
+          <div class="form-row"><label>Match duration (min)</label><input type="number" value="15"></div>
+          <div class="form-row"><label>Intense mode trigger (sec left)</label><input type="number" value="60"></div>
+        </div>
+        <div class="form-row"><label>Win condition</label>
+          <select>
+            <option>Most goals when time ends</option>
+            <option>First to N goals</option>
+            <option>Golden goal / sudden death</option>
+          </select>
+        </div>
+        <div class="form-row"><label>Goal limit (if first-to-N)</label><input type="number" value="5"></div>
+        <div class="toggle-row"><div>Sudden death on tie</div><div class="switch on" onclick="toggleSwitch(this)"><div class="knob"></div></div></div>
+        <div class="toggle-row"><div>Auto-pause on device disconnect</div><div class="switch on" onclick="toggleSwitch(this)"><div class="knob"></div></div></div>
+      </div>
+
+      <div class="card">
+        <h4>Power-ups</h4>
+        <div class="form-grid">
+          <div class="form-row"><label>Kicker cooldown (sec)</label><input type="number" value="30"></div>
+          <div class="form-row"><label>EMP cooldown (sec)</label><input type="number" value="45"></div>
+        </div>
+        <div class="toggle-row"><div>Kicker enabled</div><div class="switch on" onclick="toggleSwitch(this)"><div class="knob"></div></div></div>
+        <div class="toggle-row"><div>EMP enabled</div><div class="switch on" onclick="toggleSwitch(this)"><div class="knob"></div></div></div>
+      </div>
+
+      <div class="card">
+        <h4>Arena & lighting</h4>
+        <div class="form-row"><label>Lighting mode</label>
+          <select>
+            <option>Match live (auto)</option>
+            <option>Static red / blue</option>
+            <option>Rainbow idle</option>
+            <option>Manual</option>
+          </select>
+        </div>
+        <div class="toggle-row"><div>Confetti on goal</div><div class="switch on" onclick="toggleSwitch(this)"><div class="knob"></div></div></div>
+        <div class="toggle-row"><div>Arena shake on goal</div><div class="switch on" onclick="toggleSwitch(this)"><div class="knob"></div></div></div>
+        <div class="toggle-row"><div>LED sweep in intense mode</div><div class="switch on" onclick="toggleSwitch(this)"><div class="knob"></div></div></div>
+      </div>
+
+      <div class="card">
+        <h4>Audio</h4>
+        <div class="toggle-row"><div>Goal sound</div><div class="switch on" onclick="toggleSwitch(this)"><div class="knob"></div></div></div>
+        <div class="toggle-row"><div>Intense mode music</div><div class="switch on" onclick="toggleSwitch(this)"><div class="knob"></div></div></div>
+        <div class="toggle-row"><div>Match end music</div><div class="switch on" onclick="toggleSwitch(this)"><div class="knob"></div></div></div>
+        <div class="form-row" style="margin-top:10px;"><label>Master volume</label><input type="range" min="0" max="100" value="72"></div>
+      </div>
+    </div>
+
+    <div class="save-bar">
+      <span class="save-msg" id="settingsSavedMsg">✓ Settings saved</span>
+      <button type="button">SAVE SETTINGS</button>
+    </div>
+  </div>
+
+  <div class="footer-note">RoboSoccer · Concept 1 — Robo Arena · 1920×1080 reference layout</div>
+</div>
+
+<script>
+/* =====================================================================
+   BACKEND INTEGRATION LAYER
+   =====================================================================
+   Everything below in this block is the ONLY place you need to touch to
+   wire this UI to your real backend. The rest of the file is unchanged
+   UI logic that now calls into `api.*` / listens to `bus` instead of
+   only mutating local variables.
+
+   HOW IT WORKS
+   - Every user action (start match, +1 goal, add player, etc.) calls an
+     `api.xxx()` function below. That function:
+       1. Fires the REST call to your backend.
+       2. If the call succeeds, does nothing else — the UI update comes
+          back over the WebSocket (see EVENTS below), so every screen /
+          tablet watching this page stays in sync with the referee.
+       3. If the call fails (no backend configured yet, offline, etc.)
+          it falls back to updating the local UI directly, so the
+          concept keeps working standalone for design/demo purposes.
+   - The WebSocket connection listens for pushed events and re-renders
+     the relevant part of the screen. This is what makes multiple
+     devices (referee tablet, scoreboard TV, spectator screen) agree.
+
+   WHAT YOU NEED TO BUILD ON THE BACKEND
+   Just fill in CONFIG below and implement these endpoints/events —
+   the field names below are exactly what this file sends and expects.
+   ===================================================================== */
+
+const CONFIG = {
+  // Same-origin by default — this file is meant to be served as your
+  // RoboSoccer server's dashboard (public/index.html on :8880), so REST
+  // calls just hit "/api/...". Only set this if you host the dashboard
+  // somewhere else, e.g. "http://192.168.1.50:8880".
+  API_BASE: "",
+  // WebSocket URL — auto-computed from the current page's host + /ws
+  // (matches ARCHITECTURE.md §5: "WebSocket clients connect to /ws").
+  // Override only if the dashboard is served from a different host than
+  // the API (rare — leave as-is for the normal same-origin setup).
+  WS_URL: (location.protocol === "https:" ? "wss://" : "ws://") + location.host + "/ws",
+};
+
+/* ---- REST endpoints — these match your server's ARCHITECTURE.md §5 exactly ----
+   GET    /api/status                                   -> { deviceCount, onlineCount, wsClients, ... }
+   GET    /api/devices                                  -> DeviceNode[]
+   PUT    /api/devices/:mac/team        {team}           -> updated DeviceNode  (team: "red"|"blue"|null)
+   PUT    /api/devices/:mac/node-type   {nodeType}        -> updated DeviceNode
+   PUT    /api/devices/:mac/label       {label}           -> updated DeviceNode
+   DELETE /api/devices/:mac                               -> {}
+   POST   /api/pairing        {controllerMac, truckMac}   -> {}
+   DELETE /api/pairing/:mac                               -> {}
+   GET    /api/match/state                                -> { devices: DeviceNode[], match: MatchState }
+   GET    /api/match/history                              -> MatchHistoryEntry[]
+   POST   /api/match/start    {playerRedName?, playerBlueName?} -> { devices, match }
+   POST   /api/match/pause                                -> { devices, match }
+   POST   /api/match/resume                               -> { devices, match }
+   POST   /api/match/reset                                -> { devices, match }
+   POST   /api/match/time     {deltaMs}                   -> { devices, match }
+   POST   /api/match/goal     {team}                      -> { devices, match }
+   POST   /api/match/undo                                 -> { devices, match }
+   POST   /api/powerups/kick  {mac}                       -> {} or WS powerup_rejected on failure
+   POST   /api/powerups/emp   {mac, targetTeam}            -> {} or WS powerup_rejected on failure
+
+   NOT YET IN YOUR BACKEND — this UI's Player roster + Match Queue screens
+   need these. See BACKEND_TODO.md (shared alongside this file) for the
+   exact spec to add to your server. Until you implement them, this file
+   falls back to local-only state so the screens stay usable:
+   GET    /api/players                                    -> Player[]
+   POST   /api/players        {name, team, controllerMac?, available} -> Player
+   PATCH  /api/players/:id    {available?, ...}            -> Player
+   DELETE /api/players/:id                                 -> {}
+   GET    /api/queue                                       -> QueueItem[]
+   POST   /api/queue          {redPlayerId, bluePlayerId}   -> QueueItem
+   PATCH  /api/queue/:id      {side, playerId}              -> QueueItem
+   DELETE /api/queue/:id                                    -> {}
+   POST   /api/queue/:id/start                              -> { devices, match }  (should call match/start internally)
+
+   WEBSOCKET (/ws) — exact shapes from ARCHITECTURE.md §5 (src/types.ts::ServerEvent):
+   { type:'state', devices: DeviceNode[], match: MatchState }
+   { type:'audio_event', event:'goal_red'|'goal_blue'|'kick_fired'|'emp_fired'|'intense_start'|'intense_end'|'match_start'|'match_end'|'warmup' }
+   { type:'light_event', pattern:'IDLE'|'WARMUP'|'GOAL_RED'|'GOAL_BLUE'|'INTENSE'|'EMP_FLASH'|'WINNER_RED'|'WINNER_BLUE'|'WINNER_DRAW', rgbHex? }
+   { type:'powerup_rejected', action:'kick'|'emp', mac, reason }
+   { type:'history', entries: MatchHistoryEntry[] }
+   Not yet in your backend (see BACKEND_TODO.md): { type:'players', players } / { type:'queue', queue }
+   ===================================================================== */
+
+async function apiCall(path, options = {}) {
+  const res = await fetch(CONFIG.API_BASE + path, {
+    method: options.method || "GET",
+    headers: { "Content-Type": "application/json" },
+    body: options.body ? JSON.stringify(options.body) : undefined,
+  });
+  if (!res.ok) throw new Error("API error " + res.status + " on " + path);
+  const text = await res.text();
+  return text ? JSON.parse(text) : null;
+}
+
+function normalizePlayer(raw) {
+  const p = raw?.player ?? raw;
+
+  return {
+    id: p.id,
+    name: p.name ?? '',
+    team: p.team ?? 'bench',
+    controller: p.controller ?? p.controllerMac ?? '—',
+    controllerMac: p.controllerMac ?? null,
+    matches: p.matches ?? 0,
+    wins: p.wins ?? 0,
+    available: p.available ?? true,
+    createdAt: p.createdAt
+  };
+}
+
+
+const api = { 
+  getStatus:       () => apiCall("/api/status"), 
+
+  // Settings
+getSettings:     () => apiCall("/api/settings"),
+
+saveSettings:    (settings) => apiCall("/api/settings", {
+  method: "PUT",
+  body: settings
+}),
+
+  getDevices:      () => apiCall("/api/devices"), 
+  setDeviceTeam:   (mac, team) => apiCall(`/api/devices/${mac}/team`, { method: "PUT", body: { team } }), 
+  setDeviceType:   (mac, nodeType) => apiCall(`/api/devices/${mac}/node-type`, { method: "PUT", body: { nodeType } }), 
+  setDeviceLabel:  (mac, label) => apiCall(`/api/devices/${mac}/label`, { method: "PUT", body: { label } }), 
+  deleteDevice:    (mac) => apiCall(`/api/devices/${mac}`, { method: "DELETE" }), 
+
+  pairDevices:     (controllerMac, truckMac) => apiCall("/api/pairing", { method: "POST", body: { controllerMac, truckMac } }), 
+  unpairDevice:    (mac) => apiCall(`/api/pairing/${mac}`, { method: "DELETE" }), 
+
+  getMatchState:   () => apiCall("/api/match/state"), 
+  getMatchHistory: () => apiCall("/api/match/history"), 
+  deleteMatchHistory: () =>
+  apiCall("/api/match/history", {
+    method: "DELETE"
+  }),
+  deleteHistoryEntry: (matchId) =>
+  apiCall(`/api/match/history/${matchId}`, {
+    method: "DELETE"
+  }),
+  startMatch:      (playerRedName, playerBlueName) => apiCall("/api/match/start", { method: "POST", body: { playerRedName, playerBlueName } }), 
+  pauseMatch:      () => apiCall("/api/match/pause", { method: "POST" }), 
+  resumeMatch:     () => apiCall("/api/match/resume", { method: "POST" }), 
+  resetMatch:      () => apiCall("/api/match/reset", { method: "POST" }), 
+  adjustTime:      (deltaMs) => apiCall("/api/match/time", { method: "POST", body: { deltaMs } }), 
+  scoreGoal:       (team) => apiCall("/api/match/goal", { method: "POST", body: { team } }), 
+  undoGoal:        () => apiCall("/api/match/undo", { method: "POST" }), 
+
+  triggerKick:     (mac) => apiCall("/api/powerups/kick", { method: "POST", body: { mac } }), 
+  triggerEmp:      (mac, targetTeam) => apiCall("/api/powerups/emp", { method: "POST", body: { mac, targetTeam } }), 
+
+  getPlayers: async () => { 
+    const res = await apiCall("/api/players"); 
+    const list = Array.isArray(res) ? res : (res?.players ?? []); 
+    return list.map(normalizePlayer); 
+  }, 
+
+  addPlayer: async (player) => { 
+    const backendPlayer = { 
+      name: player.name, 
+      team: player.team === "bench" ? null : player.team, 
+      controllerMac: player.controllerMac ?? null 
+    }; 
+
+    const res = await apiCall("/api/players", { 
+      method: "POST", 
+      body: backendPlayer 
+    }); 
+
+    return normalizePlayer(res); 
+  }, 
+
+  updatePlayer: async (id, patch) => { 
+    const res = await apiCall(`/api/players/${id}`, { 
+      method: "PUT", 
+      body: patch 
+    }); 
+
+    return normalizePlayer(res); 
+  }, 
+
+  removePlayer: async (id) => { 
+    return apiCall(`/api/players/${id}`, { 
+      method: "DELETE" 
+    }); 
+  }, 
+
+  getQueue:        () => apiCall("/api/queue"), 
+  addToQueue:      (redPlayerId, bluePlayerId) => apiCall("/api/queue", { method: "POST", body: { redPlayerId, bluePlayerId } }), 
+  removeFromQueue: (id) => apiCall(`/api/queue/${id}`, { method: "DELETE" }), 
+  reassignQueue:   (id, side, playerId) => apiCall(`/api/queue/${id}`, { method: "PATCH", body: { side, playerId } }), 
+  startQueueMatch: (id) => apiCall(`/api/queue/${id}/start`, { method: "POST" }), 
+};
+
+/* Tiny pub/sub so WebSocket events and local fallback code can share renderers. */
+const bus = { handlers: {}, on(type, fn){ (this.handlers[type] ||= []).push(fn); }, emit(type, payload){ (this.handlers[type]||[]).forEach(fn=>fn(payload)); } };
+
+function setConnStatus(text, ok){
+  const el = document.getElementById('connStatus');
+  if(el) el.textContent = (ok ? '● ' : '○ ') + text;
+}
+
+let socket = null;
+function connectWebSocket(){
+  if(!CONFIG.WS_URL){ setConnStatus('No backend configured', false); return; }
+  socket = new WebSocket(CONFIG.WS_URL);
+  socket.onopen = () => setConnStatus('Arena online', true);
+  socket.onmessage = (evt) => {
+    try{
+      const msg = JSON.parse(evt.data);
+      // Real server sends flat { type, ...fields } messages (ARCHITECTURE.md §5),
+      // not a {type, payload} envelope — pass the whole message through.
+      bus.emit(msg.type, msg);
+    }catch(e){ console.error('Bad WS message', e); }
+  };
+  socket.onclose = () => { setConnStatus('Reconnecting…', false); setTimeout(connectWebSocket, 2000); };
+  socket.onerror = () => setConnStatus('Connection error', false);
+}
+connectWebSocket();
+
+/* =================== end backend integration layer =================== */
+
+let redScore = 0, blueScore = 0;
+function setTimer(el, text){ const parts = text.split(':'); el.innerHTML = parts[0]+'<span class="colon">:</span>'+parts[1]; }
+function showScreen(name, el){
+  document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+name).classList.add('active');
+}
+function burstConfetti(color){
+  const box = document.getElementById('confetti');
+  box.innerHTML = '';
+  const colors = [color, '#ffcf4d', '#ffffff'];
+  for(let i=0;i<24;i++){
+    const c = document.createElement('i');
+    c.style.left = (Math.random()*100)+'%';
+    c.style.background = colors[i%colors.length];
+    c.style.animationDelay = (Math.random()*.4)+'s';
+    c.style.animationDuration = (1.2+Math.random()*.8)+'s';
+    box.appendChild(c);
+  }
+}
+let __ballTimer1 = null, __ballTimer2 = null, __ballTimer3 = null;
+function triggerTruckKick(side){
+  const truck = document.querySelector('.truckside.'+side);
+  if(!truck) return;
+  truck.classList.remove('kicking');
+  void truck.offsetWidth;
+  truck.classList.add('kicking');
+  setTimeout(()=>truck.classList.remove('kicking'), 650);
+}
+function kickBallTo(direction, side){
+  const ballWrap = document.getElementById('ballWrap');
+  const goal = document.querySelector('.goalpost.'+direction);
+  if(!ballWrap || !goal) return;
+  clearTimeout(__ballTimer1); clearTimeout(__ballTimer2); clearTimeout(__ballTimer3);
+
+  const ballRect = ballWrap.getBoundingClientRect();
+  const goalRect = goal.getBoundingClientRect();
+  const dx = (goalRect.left + goalRect.width/2) - (ballRect.left + ballRect.width/2);
+  ballWrap.style.setProperty('--kick-dx', dx+'px');
+
+  ballWrap.classList.remove('returning');
+  ballWrap.classList.add('kicking');
+  triggerTruckKick(side);
+
+  __ballTimer1 = setTimeout(()=>{
+    goal.classList.add('flash');
+    setTimeout(()=>goal.classList.remove('flash'), 550);
+  }, 830);
+
+  __ballTimer2 = setTimeout(()=>{
+    ballWrap.classList.remove('kicking');
+    void ballWrap.offsetWidth;
+    ballWrap.classList.add('returning');
+  }, 900);
+
+  __ballTimer3 = setTimeout(()=>{
+    ballWrap.classList.remove('returning');
+  }, 1400);
+}
+/* ===== REFEREE PANEL — the only control surface for the live match; every
+   value below starts blank/zero and is filled in by the backend at runtime. ===== */
+/* ===== REFEREE PANEL — the only control surface for the live match; every
+   value below starts blank/zero and is filled in by the real backend
+   (GET /api/match/state on load, then the WS `state` event forever after). ===== */
+let matchSeconds = 0;
+let matchRunning = false;
+let matchHasEnded = false;
+let refTimerInterval = null;
+let latestDevices = [];   // most recent DeviceNode[] from the backend — drives Fleet/Pairing/power-up pills
+
+function fmtClock(sec){
+  sec = Math.max(0, Math.round(sec));
+  const m = Math.floor(sec/60), s = sec%60;
+  return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+}
+function refSyncDisplay(){
+  setTimer(document.getElementById('timer'), fmtClock(matchSeconds));
+  document.getElementById('refClockLine').textContent = fmtClock(matchSeconds);
+  document.getElementById('refScoreLine').textContent = String(redScore).padStart(2,'0')+' – '+String(blueScore).padStart(2,'0');
+}
+function refSetStateLine(label){ document.getElementById('refStateLine').textContent = label; }
+
+/* Applies { devices, match } — the exact shape returned by GET /api/match/state
+   AND pushed by the WS `state` event (ARCHITECTURE.md §4/§5). This is the
+   single source of truth once the backend is reachable. */
+function applyServerState(s){
+  if(!s) return;
+  if(Array.isArray(s.devices)){
+    latestDevices = s.devices;
+    renderFleet(latestDevices);
+    renderPairing(latestDevices);
+    refreshPowerupPills(latestDevices);
+  }
+  const m = s.match;
+  if(!m) return;
+  redScore = m.scoreRed ?? 0;
+  blueScore = m.scoreBlue ?? 0;
+  matchSeconds = typeof m.timeRemainingMs === 'number' ? m.timeRemainingMs / 1000 : matchSeconds;
+  matchRunning = !!m.matchActive && !m.isPaused;
+  matchHasEnded = !m.matchActive && !!m.winner;
+  if(matchHasEnded && !previousMatchHasEnded) refreshHistoryOnMatchEnd();
+  previousMatchHasEnded = matchHasEnded;
+  document.getElementById('redscore').textContent = String(redScore).padStart(2,'0');
+  document.getElementById('bluescore').textContent = String(blueScore).padStart(2,'0');
+  document.getElementById('redPname').textContent = m.playerRedName || '—';
+  document.getElementById('bluePname').textContent = m.playerBlueName || '—';
+  document.getElementById('currentRedName').textContent = m.playerRedName || '—';
+  document.getElementById('currentBlueName').textContent = m.playerBlueName || '—';
+
+  const arena = document.getElementById('arena');
+  arena.classList.toggle('intense', !!m.isIntenseMode);
+
+  let label;
+  if(m.winner){
+    label = m.winner === 'draw' ? `Match drawn ${redScore} – ${blueScore}`
+      : `${m.winner === 'red' ? 'Red' : 'Blue'} wins ${redScore} – ${blueScore}`;
+  } else if(!m.matchActive){
+    label = 'Match ready';
+  } else if(m.isPaused){
+    label = 'Match paused';
+  } else if(m.isIntenseMode){
+    label = 'Intense mode';
+  } else {
+    label = 'Match live';
+  }
+  document.getElementById('statelabel').textContent = label;
+  document.getElementById('matchstate').textContent = label;
+  document.getElementById('statedot').classList.toggle('live', matchRunning);
+  document.getElementById('matchstate').classList.toggle('live', matchRunning);
+  refSetStateLine(label);
+  refSyncDisplay();
+
+  if(matchRunning) refRunInterval(); else clearInterval(refTimerInterval);
+}
+bus.on('state', applyServerState);
+
+/* audio_event drives goal animation/confetti + the ticker — the score itself
+   already came from the `state` event above, so this never touches redScore/blueScore. */
+bus.on('audio_event', (msg)=>{
+  const clock = fmtClock(matchSeconds);
+  switch(msg.event){
+    case 'goal_red':      playGoalAnimation('red');  pushTickerEvent({label:'GOAL — RED', detail: clock}); break;
+    case 'goal_blue':     playGoalAnimation('blue'); pushTickerEvent({label:'GOAL — BLUE', detail: clock}); break;
+    case 'kick_fired':    pushTickerEvent({label:'KICKER FIRED', detail: clock}); break;
+    case 'emp_fired':     pushTickerEvent({label:'EMP FIRED', detail: clock}); break;
+    case 'intense_start': pushTickerEvent({label:'MATCH ENTERED INTENSE MODE'}); break;
+    case 'intense_end':   pushTickerEvent({label:'INTENSE MODE ENDED'}); break;
+    case 'match_start':   pushTickerEvent({label:'MATCH STARTED'}); break;
+    case 'match_end':     pushTickerEvent({label:'MATCH ENDED'}); break;
+    case 'warmup':        pushTickerEvent({label:'WARMUP'}); break;
+  }
+});
+bus.on('powerup_rejected', (msg)=>{
+  pushTickerEvent({label:(msg.action==='kick'?'KICKER':'EMP')+' REJECTED', detail: msg.reason || ''});
+});
+bus.on('history', (msg)=>{ if(Array.isArray(msg.entries)){ matchHistory = msg.entries; renderHistory(); } });
+/* Not yet in your backend — see BACKEND_TODO.md. Wire these up once you add
+   the corresponding WS pushes so every connected dashboard stays in sync. */
+bus.on('players', (msg)=>{ if(Array.isArray(msg.players)){ players = msg.players; renderPlayers(); } });
+bus.on('queue', (msg)=>{ if(Array.isArray(msg.queue)){ matchQueue = msg.queue; renderQueue(); } });
+
+/* Goal flash / confetti / ball-kick animation only — no score mutation here,
+   the `state` event already updated redScore/blueScore. */
+function playGoalAnimation(side){
+  const arena = document.getElementById('arena');
+  arena.classList.remove('goal','goal-red','goal-blue');
+  void arena.offsetWidth;
+  const goaltext = document.getElementById('goaltext');
+  const scoreEl = document.getElementById(side === 'red' ? 'redscore' : 'bluescore');
+  scoreEl.classList.remove('pop'); void scoreEl.offsetWidth; scoreEl.classList.add('pop');
+  if(side === 'red'){
+    goaltext.textContent = 'RED SCORES!'; arena.classList.add('goal','goal-red'); burstConfetti('#ff3b4e'); kickBallTo('right','red');
+  } else {
+    goaltext.textContent = 'BLUE SCORES!'; arena.classList.add('goal','goal-blue'); burstConfetti('#2fb2ff'); kickBallTo('left','blue');
+  }
+  setTimeout(()=>arena.classList.remove('goal','goal-red','goal-blue'), 1500);
+}
+
+/* ----- Fleet / Pairing: rendered straight from DeviceNode[] — no separate endpoint ----- */
+function emptyState(msg){ return `<div style="font-size:12px;color:var(--sub);padding:6px 0;">${msg}</div>`; }
+function shortMac(mac){ return mac ? mac.slice(-8) : '—'; }
+
+function renderFleet(devices){
+  const controllersEl = document.getElementById('fleetControllers');
+  const trucksEl = document.getElementById('fleetTrucks');
+  const lightingEl = document.getElementById('fleetLighting');
+  if(!devices || !devices.length){
+    if(controllersEl) controllersEl.innerHTML = emptyState('No controllers have connected yet.');
+    if(trucksEl) trucksEl.innerHTML = emptyState('No trucks have connected yet.');
+    if(lightingEl) lightingEl.innerHTML = emptyState('No lighting rig has connected yet.');
+    document.getElementById('connDevices').textContent = '—';
+    return;
+  }
+  const row = (d) => {
+    const name = d.label || (d.team ? d.team.toUpperCase()+' · ' : '') + shortMac(d.mac);
+    const meta = [d.team ? d.team : null, d.batteryPct != null ? d.batteryPct+'%' : null, d.mac].filter(Boolean).join(' · ');
+    return `<div class="device"><div><div class="name">${name}</div><div class="meta">${meta}</div></div><span class="${d.isOnline?'stat-online':'stat-offline'}">${d.isOnline?'Online':'Offline'}</span></div>`;
+  };
+  const controllers = devices.filter(d=>d.nodeType==='controller');
+  const trucks = devices.filter(d=>d.nodeType==='truck');
+  const lighting = devices.filter(d=>d.nodeType==='lighting');
+  if(controllersEl) controllersEl.innerHTML = controllers.map(row).join('') || emptyState('No controllers have connected yet.');
+  if(trucksEl) trucksEl.innerHTML = trucks.map(row).join('') || emptyState('No trucks have connected yet.');
+  if(lightingEl) lightingEl.innerHTML = lighting.map(row).join('') || emptyState('No lighting rig has connected yet.');
+  const onlineCount = devices.filter(d=>d.isOnline).length;
+  document.getElementById('connDevices').textContent = `${onlineCount}/${devices.length} devices`;
+  setConnStatus(onlineCount > 0 ? 'Arena online' : 'No devices online', onlineCount > 0);
+}
+
+function renderPairing(devices){
+  const el = document.getElementById('pairingList');
+  if(!el) return;
+  const controllers = devices.filter(d=>d.nodeType==='controller');
+  if(!controllers.length){ el.innerHTML = emptyState('No controllers have connected yet.'); return; }
+  el.innerHTML = controllers.map(c=>{
+    const truck = c.pairedMac ? devices.find(d=>d.mac===c.pairedMac) : null;
+    const cName = c.label || (c.team?c.team.toUpperCase()+' · ':'')+shortMac(c.mac);
+    const tName = truck ? (truck.label || 'Truck · '+shortMac(truck.mac)) : '—';
+    return `<div class="pair-chain"><div class="node">${cName}</div><div class="arrow">→</div>
+      <div class="node">${tName}</div>
+      <span class="${truck?'stat-online':'stat-offline'}">${truck?'Linked':'Not paired'}</span></div>`;
+  }).join('');
+}
+
+/* Power-up pills on the scoreboard: purely a live read of DeviceNode state
+   (kickerCooldownUntil / powerupEmpReady) for whichever controller is
+   currently assigned to each team — never a locally simulated timer. */
+function refreshPowerupPills(devices){
+  const now = Date.now();
+  ['red','blue'].forEach(side=>{
+    const controller = devices.find(d=>d.nodeType==='controller' && d.team===side);
+    const kickerEl = document.getElementById(side+'kicker');
+    const empEl = document.getElementById(side+'emp');
+    if(!controller){
+      kickerEl.textContent = 'Kicker · No controller'; kickerEl.classList.remove('ready');
+      empEl.textContent = 'EMP · No controller'; empEl.classList.remove('ready');
+      return;
+    }
+    const kickerReady = !controller.kickerCooldownUntil || controller.kickerCooldownUntil <= now;
+    kickerEl.classList.toggle('ready', kickerReady);
+    kickerEl.textContent = kickerReady ? 'Kicker · Ready' : 'Kicker · ' + Math.ceil((controller.kickerCooldownUntil - now)/1000) + 's';
+    empEl.classList.toggle('ready', !!controller.powerupEmpReady);
+    empEl.textContent = 'EMP · ' + (controller.powerupEmpReady ? 'Ready' : 'Not unlocked');
+  });
+}
+setInterval(()=>{ if(latestDevices.length) refreshPowerupPills(latestDevices); }, 1000);
+
+function refTriggerKick(side){
+  const controller = latestDevices.find(d=>d.nodeType==='controller' && d.team===side);
+  if(!controller){ pushTickerEvent({label:'KICK FAILED', detail:'No controller assigned to '+side}); return; }
+  api.triggerKick(controller.mac).catch(err=>pushTickerEvent({label:'KICK FAILED', detail: err.message}));
+}
+function refTriggerEmp(side){
+  const controller = latestDevices.find(d=>d.nodeType==='controller' && d.team===side);
+  if(!controller){ pushTickerEvent({label:'EMP FAILED', detail:'No controller assigned to '+side}); return; }
+  const targetTeam = side === 'red' ? 'blue' : 'red';
+  api.triggerEmp(controller.mac, targetTeam).catch(err=>pushTickerEvent({label:'EMP FAILED', detail: err.message}));
+}
+
+/* ----- Audio screen: your backend has Spotify OAuth (§5) but no live status
+   endpoint yet, so this is honest about what's actually knowable right now
+   rather than showing a fake "connected" track. ----- */
+function renderAudio(){
+  const playbackEl = document.getElementById('audioPlayback');
+  const soundsEl = document.getElementById('audioEventSounds');
+  if(playbackEl){
+    playbackEl.innerHTML = `
+      <div style="font-size:12px;color:var(--sub);margin-bottom:10px;">
+        Spotify ducking is handled server-side (OAuth, safe no-op if unconfigured).
+        There's no live "now playing" endpoint yet — see BACKEND_TODO.md if you want one.
+      </div>
+      <a class="btn-primary" style="display:inline-block;text-decoration:none;" href="/auth/spotify/login">Connect Spotify</a>`;
+  }
+  if(soundsEl){
+    soundsEl.innerHTML = emptyState('Event sounds play from the built-in Web Audio synth on audio_event / light_event — no per-sound toggle exists in the API yet.');
+  }
+}
+
+/* ----- Live ticker: local event log, seeded empty; filled from audio_event /
+   powerup_rejected messages above as they actually happen. ----- */
+let tickerEvents = [];
+function pushTickerEvent(entry){
+  tickerEvents.unshift(entry);
+  tickerEvents = tickerEvents.slice(0, 8);
+  renderTicker();
+}
+function renderTicker(){
+  const el = document.getElementById('ticker');
+  if(!el) return;
+  if(!tickerEvents.length){
+    el.innerHTML = '<span id="tickerEmpty" style="color:var(--sub);">No events yet — actions will appear here as they happen.</span>';
+    return;
+  }
+  el.innerHTML = tickerEvents.map(e => `<span><b>${e.label}</b>${e.detail ? ' · '+e.detail : ''}</span>`).join('');
+}
+
+/* Load initial state from the backend on page load. Match/devices come from
+   your real API; players/queue/history fail gracefully (with a ticker note)
+   until BACKEND_TODO.md is implemented. */
+
+   async function bootstrapFromBackend() {
+  try {
+
+    // 1. Load players FIRST
+    try {
+      const p = await api.getPlayers();
+
+      players = Array.isArray(p)
+        ? p
+        : [];
+
+      renderPlayers();
+
+    } catch (err) {
+      console.error("Failed to load players:", err);
+      players = [];
+    }
+
+
+    // 2. Load queue
+    try {
+      const q = await api.getQueue();
+
+      if (Array.isArray(q)) {
+        matchQueue = q;
+
+      } else if (q && Array.isArray(q.queue)) {
+        matchQueue = q.queue;
+
+      } else {
+        matchQueue = [];
+      }
+
+      renderQueue();
+
+    } catch (err) {
+      console.error("Failed to load queue:", err);
+      matchQueue = [];
+      renderQueue();
+    }
+
+  } catch (err) {
+    console.error("Backend bootstrap failed:", err);
+  }
+}
+
+function refStart(){
+  if(matchRunning || matchHasEnded) return;
+  const redName = document.getElementById('redPname').textContent.trim();
+  const blueName = document.getElementById('bluePname').textContent.trim();
+  api.startMatch(redName && redName !== '—' ? redName : undefined, blueName && blueName !== '—' ? blueName : undefined)
+    .then(applyServerState)
+    .catch(err => pushTickerEvent({label:'START FAILED', detail: err.message}));
+}
+function refPause(){
+  if(!matchRunning) return;
+  api.pauseMatch().then(applyServerState).catch(err => pushTickerEvent({label:'PAUSE FAILED', detail: err.message}));
+}
+function refResume(){
+  if(matchRunning || matchHasEnded) return;
+  api.resumeMatch().then(applyServerState).catch(err => pushTickerEvent({label:'RESUME FAILED', detail: err.message}));
+}
+/* This client-side ticking is display-only, smoothing the seconds between WS
+   `state` pushes — the backend's own 1s tick (ARCHITECTURE.md §4) is what
+   actually owns timeRemainingMs, so this never fires refEndMatch itself;
+   match end/winner comes from the server via applyServerState. */
+function refRunInterval(){
+  clearInterval(refTimerInterval);
+  refTimerInterval = setInterval(()=>{
+    if(!matchRunning) return;
+    matchSeconds = Math.max(0, matchSeconds - 1);
+    refSyncDisplay();
+  }, 1000);
+}
+function refReset(){
+  if(!confirm('Reset match? This clears the score, timer and power-up cooldowns.')) return;
+  api.resetMatch().then(applyServerState).catch(err => pushTickerEvent({label:'RESET FAILED', detail: err.message}));
+}
+function refGoal(side){
+  api.scoreGoal(side).catch(err => pushTickerEvent({label:'GOAL FAILED', detail: err.message}));
+  // no local score mutation — the WS `state` event updates redScore/blueScore,
+  // and the WS `audio_event` (goal_red/goal_blue) triggers the animation.
+}
+function refUndoGoal(){
+  api.undoGoal().then(applyServerState).catch(err => pushTickerEvent({label:'UNDO FAILED', detail: err.message}));
+}
+function refAdjustTimer(deltaMs){
+  api.adjustTime(deltaMs).then(applyServerState).catch(err => pushTickerEvent({label:'TIMER ADJUST FAILED', detail: err.message}));
+}
+
+/* ===== PLAYERS: roster, availability, matchmaking (in-memory demo) ===== */
+/* No sample/demo data seeded here on purpose — everything below starts empty
+   and is populated entirely from the backend via bootstrapFromBackend() and
+   the WebSocket events wired up in the integration layer above. */
+let players = [];
+let playerIdCounter = 1;   // only used as a fallback id if a POST /players call fails
+
+let matchQueue = [];
+let queueIdCounter = 1;    // fallback id if a POST /queue call fails
+
+let currentMatch = {redId:null, blueId:null};
+
+let matchHistory = [];
+let matchCounter = 1;      // fallback match number if the backend doesn't return one
+
+function renderPlayers(){
+  const tbody = document.getElementById('playersBody');
+  if(!tbody) return;
+  tbody.innerHTML = players.map(p=>`
+    <tr>
+      <td>${p.name}</td>
+      <td><span class="team-badge ${p.team}">${p.team==='bench' ? 'Bench' : p.team}</span></td>
+      <td>${p.controller}</td>
+      <td>${p.matches}</td>
+      <td>${p.wins}</td>
+      <td>
+        <div class="switch status-switch ${p.available?'on':''}" onclick="togglePlayerAvailable('${p.id}')" title="${p.available?'Available':'Unavailable'}"><div class="knob"></div></div>
+      </td>
+      <td><button class="icon-btn" onclick="removePlayer('${p.id}')">✕ Remove</button></td>
+    </tr>`).join('');
+  renderPlayerSelects();
+  renderCurrentMatchBanner();
+}
+
+function togglePlayerAvailable(id){
+  const p = players.find(p=>p.id===id);
+  if(p) p.available = !p.available;
+  api.updatePlayer(id, {available: p ? p.available : undefined}).catch(()=>{});
+  renderPlayers();
+  renderQueue();
+}
+
+function addPlayer(){
+  const nameEl = document.getElementById('newPlayerName');
+  const teamEl = document.getElementById('newPlayerTeam');
+  const ctrlEl = document.getElementById('newPlayerController');
+  const availEl = document.getElementById('newPlayerAvailable');
+  const name = nameEl.value.trim();
+  if(!name){ nameEl.focus(); return; }
+  const newPlayer = {name, team:teamEl.value, controller:ctrlEl.value, matches:0, wins:0,
+    available: availEl.classList.contains('on')};
+  api.addPlayer(newPlayer).then(created=>{
+    players.push(created); renderPlayers();
+  }).catch(()=>{
+    players.push({id:playerIdCounter++, ...newPlayer});
+    renderPlayers();
+  });
+  nameEl.value = '';
+}
+
+function removePlayer(id){
+  api.removePlayer(id).catch(()=>{});
+  players = players.filter(p=>p.id!==id);
+  matchQueue.forEach(q=>{
+    if(q.redId===id) q.issue='red';
+    if(q.blueId===id) q.issue='blue';
+  });
+  renderPlayers();
+  renderQueue();
+}
+
+/* ---- next-match setup: only available players show up here ---- */
+function renderPlayerSelects() {
+  const redSel = document.getElementById('matchRedPlayer');
+  const blueSel = document.getElementById('matchBluePlayer');
+
+  if (!redSel || !blueSel) return;
+
+  const prevRed = redSel.value;
+  const prevBlue = blueSel.value;
+
+  const avail = players.filter(p => p.available);
+
+  const redPlayers = avail.filter(p => p.team === 'red');
+  const bluePlayers = avail.filter(p => p.team === 'blue');
+
+  const redOpts = redPlayers
+    .map(p =>
+      `<option value="${p.id}">${p.name} · red</option>`
+    )
+    .join('');
+
+  const blueOpts = bluePlayers
+    .map(p =>
+      `<option value="${p.id}">${p.name} · blue</option>`
+    )
+    .join('');
+
+  redSel.innerHTML = redOpts;
+  blueSel.innerHTML = blueOpts;
+
+  // Preserve previous selection if that player still exists.
+  if (redPlayers.some(p => String(p.id) === String(prevRed))) {
+    redSel.value = prevRed;
+  } else if (redPlayers.length > 0) {
+    redSel.value = redPlayers[0].id;
+  }
+
+  if (bluePlayers.some(p => String(p.id) === String(prevBlue))) {
+    blueSel.value = prevBlue;
+  } else if (bluePlayers.length > 0) {
+    blueSel.value = bluePlayers[0].id;
+  }
+
+  const warning = document.getElementById('setupWarning');
+
+  if (warning) {
+    warning.style.display =
+      redPlayers.length === 0 || bluePlayers.length === 0
+        ? 'block'
+        : 'none';
+  }
+}
+
+function renderCurrentMatchBanner(){
+  const redEl = document.getElementById('currentRedName');
+  const blueEl = document.getElementById('currentBlueName');
+  if(!redEl || !blueEl) return;
+  const redP = players.find(p=>p.id===currentMatch.redId);
+  const blueP = players.find(p=>p.id===currentMatch.blueId);
+  redEl.textContent = redP ? redP.name : '—';
+  blueEl.textContent = blueP ? blueP.name : '—';
+}
+
+function applyMatch(redId, blueId){
+  currentMatch = {redId, blueId};
+  const redP = players.find(p=>p.id===redId);
+  const bluePlayer = players.find(p=>p.id===blueId);
+  document.querySelector('.truckside.red .pname').textContent = redP ? redP.name : 'Red';
+  document.querySelector('.truckside.blue .pname').textContent = bluePlayer ? bluePlayer.name : 'Blue';
+  renderCurrentMatchBanner();
+  showScreen('live', document.getElementById('navLiveBtn'));
+  resetLiveDisplayToReady();
+  api.startMatch(redP ? redP.name : undefined, bluePlayer ? bluePlayer.name : undefined)
+    .then(applyServerState)
+    .catch(err => pushTickerEvent({label:'START FAILED', detail: err.message}));
+}
+
+/* Resets the live screen visuals to "Match ready" without touching the
+   removed design-preview toolbar (deleted — the referee panel is the only
+   control surface now). */
+function resetLiveDisplayToReady(){
+  const arena = document.getElementById('arena');
+  arena.classList.remove('intense','goal','goal-red','goal-blue');
+  document.getElementById('statedot').classList.remove('live');
+  document.getElementById('statelabel').textContent = 'Match ready';
+  document.getElementById('matchstate').textContent = 'Match ready';
+  document.getElementById('matchstate').classList.remove('live');
+  refSetStateLine('Match ready');
+  matchRunning = false; matchHasEnded = false;
+  clearInterval(refTimerInterval);
+  refSyncDisplay();
+}
+
+function startMatchNow(){
+  const redSel = document.getElementById('matchRedPlayer');
+  const blueSel = document.getElementById('matchBluePlayer');
+  const errEl = document.getElementById('setupError');
+  if(!redSel.value || !blueSel.value){ return; }
+  if(redSel.value === blueSel.value){
+    errEl.textContent = '⚠ Red aur Blue ke liye alag-alag player choose karo.';
+    errEl.style.display = 'block';
+    return;
+  }
+  errEl.style.display = 'none';
+  applyMatch(Number(redSel.value), Number(blueSel.value));
+}
+
+/* ---- match queue: plan next matches, swap in a substitute if someone is unavailable ---- */
+function addToQueue() {
+  const redSel = document.getElementById('matchRedPlayer');
+  const blueSel = document.getElementById('matchBluePlayer');
+
+  if (
+    !redSel.value ||
+    !blueSel.value ||
+    redSel.value === blueSel.value
+  ) {
+    return;
+  }
+
+  const redId = redSel.value;
+  const blueId = blueSel.value;
+
+  api.addToQueue(redId, blueId)
+    .then(item => {
+
+      // Backend may return { ... } or { queue: [...] }
+      const queueItem = item?.queue
+        ? item.queue[item.queue.length - 1]
+        : item;
+
+      if (queueItem) {
+        matchQueue.push(queueItem);
+        renderQueue();
+      }
+
+    })
+    .catch(err => {
+      console.error("Queue add failed:", err);
+    });
+}
+
+function renderQueue() {
+  const box = document.getElementById('queueList');
+  const empty = document.getElementById('queueEmpty');
+
+  if (!box) return;
+
+  if (!matchQueue.length) {
+    box.innerHTML = '';
+    if (empty) empty.style.display = 'block';
+    return;
+  }
+
+  if (empty) empty.style.display = 'none';
+
+  box.innerHTML = matchQueue.map(q => {
+
+    // Support backend field names
+    const redId = q.playerRedId ?? q.redId;
+    const blueId = q.playerBlueId ?? q.blueId;
+
+    // IDs are UUID strings, so ALWAYS compare as strings
+    const redP = players.find(
+      p => String(p.id) === String(redId)
+    );
+
+    const blueP = players.find(
+      p => String(p.id) === String(blueId)
+    );
+
+    let issue = null;
+
+    if (!redP || !redP.available) {
+      issue = 'red';
+    } else if (!blueP || !blueP.available) {
+      issue = 'blue';
+    }
+
+    q.issue = issue;
+
+    const subOptions = players
+      .filter(p =>
+        p.available &&
+        String(p.id) !== String(redId) &&
+        String(p.id) !== String(blueId)
+      )
+      .map(p =>
+        `<option value="${p.id}">${p.name}</option>`
+      )
+      .join('');
+
+    return `
+      <div class="queue-row">
+
+        <div class="queue-names">
+          <span class="r">
+            ${redP ? redP.name : 'Removed player'}
+          </span>
+
+          <span class="vs"> vs </span>
+
+          <span class="b">
+            ${blueP ? blueP.name : 'Removed player'}
+          </span>
+        </div>
+
+        <div class="queue-actions">
+          <button
+            class="btn small"
+            onclick="startQueueMatch('${q.id}')">
+            ▶ Start
+          </button>
+
+          <button
+            class="icon-btn"
+            onclick="removeFromQueue('${q.id}')">
+            ✕ Remove
+          </button>
+        </div>
+
+        ${issue ? `
+          <div class="queue-warn">
+
+            ⚠ ${
+              issue === 'red'
+                ? (redP ? redP.name : 'Red player')
+                : (blueP ? blueP.name : 'Blue player')
+            }
+
+            is not available right now — pick a replacement:
+
+            <select id="sub-${q.id}">
+              ${
+                subOptions ||
+                '<option value="">No one else available</option>'
+              }
+            </select>
+
+            <button
+              class="btn small"
+              onclick="reassignQueueSlot('${q.id}','${issue}')">
+              Confirm swap
+            </button>
+
+          </div>
+        ` : ''}
+
+      </div>
+    `;
+  }).join('');
+}
+
+async function removeFromQueue(id) {
+  try {
+    console.log("[queue] removing:", id);
+
+    const response = await api.removeFromQueue(id);
+
+    console.log("[queue] removed successfully:", response);
+
+    matchQueue = matchQueue.filter(q => q.id !== id);
+
+    renderQueue();
+
+  } catch (error) {
+    console.error("[queue] remove failed:", error);
+
+    alert("Failed to remove queue item. Check the server.");
+  }
+}
+
+function reassignQueueSlot(qid, side){
+  const item = matchQueue.find(q=>q.id===qid);
+  const subSel = document.getElementById('sub-'+qid);
+  if(!item || !subSel || !subSel.value) return;
+  const playerId = Number(subSel.value);
+  api.reassignQueue(qid, side, playerId).catch(()=>{});
+  if(side==='red') item.redId = playerId; else item.blueId = playerId;
+  item.issue = null;
+  renderQueue();
+}
+
+function startQueueMatch(id) {
+
+  const item = matchQueue.find(
+    q => String(q.id) === String(id)
+  );
+
+  if (!item) return;
+
+  const redId = item.playerRedId ?? item.redId;
+  const blueId = item.playerBlueId ?? item.blueId;
+
+  const redP = players.find(
+    p => String(p.id) === String(redId)
+  );
+
+  const blueP = players.find(
+    p => String(p.id) === String(blueId)
+  );
+
+  if (!redP || !redP.available || !blueP || !blueP.available) {
+    renderQueue();
+    return;
+  }
+
+  api.startQueueMatch(id)
+    .then(() => {
+      matchQueue = matchQueue.filter(
+        q => String(q.id) !== String(id)
+      );
+
+      renderQueue();
+
+      applyMatch(redP.id, blueP.id);
+    })
+    .catch(err => {
+      console.error("Failed to start queued match:", err);
+    });
+}
+
+let previousMatchHasEnded = false;
+/* Called from applyServerState whenever the match transitions to "ended" —
+   pulls the authoritative ledger from the backend rather than fabricating a
+   local history entry, since GET /api/match/history is the real source of truth. */
+function refreshHistoryOnMatchEnd(){
+  api.getMatchHistory().then(h => { if(Array.isArray(h)){ matchHistory = h; renderHistory(); } }).catch(()=>{});
+}
+
+/* Your MatchHistoryEntry shape isn't pinned down in ARCHITECTURE.md yet, so this
+   accepts either the MatchState-style field names or short/legacy ones. */
+function normalizeHistoryEntry(m, i){
+  return {
+    id: m.matchId ?? m.id ?? i,
+    redName: m.playerRedName ?? m.redName ?? 'Red',
+    blueName: m.playerBlueName ?? m.blueName ?? 'Blue',
+    redScore: m.scoreRed ?? m.redScore ?? 0,
+    blueScore: m.scoreBlue ?? m.blueScore ?? 0,
+    winner: m.winner ?? null,
+    when: m.endedAt ? new Date(m.endedAt).toLocaleString() : (m.date ?? ''),
+  };
+}
+
+function renderHistory(){
+  const box = document.getElementById('historyList');
+  if(!box) return;
+
+  const deleteButton = `
+    <div style="display:flex; justify-content:flex-end; margin-bottom:16px;">
+      <button
+        class="btn danger"
+        onclick="deleteAllMatchHistory()"
+      >
+        ✕ DELETE HISTORY
+      </button>
+    </div>
+  `;
+
+  if(!matchHistory.length){
+    box.innerHTML =
+      deleteButton +
+      emptyState('No completed matches yet.');
+    return;
+  }
+
+  box.innerHTML =
+    deleteButton +
+    matchHistory.map((raw,i)=>{
+      const m = normalizeHistoryEntry(raw, i);
+
+      return `
+        <div class="match-card">
+
+          <div class="side red">
+            <div class="tn">Red</div>
+            <div>${m.redName}</div>
+            <div class="sc">
+              ${String(m.redScore).padStart(2,'0')}
+            </div>
+          </div>
+
+          <div class="mid">
+            Match ${m.id}<br>
+            ${m.when}<br>
+
+            <span class="winner">
+              ${
+                m.winner === 'draw'
+                  ? 'Draw'
+                  : 'Winner: ' +
+                    (m.winner === 'red' ? 'Red' : 'Blue')
+              }
+            </span>
+
+            <br>
+
+            <button
+              class="btn small danger"
+              onclick="deleteHistoryEntry('${raw.matchId}')"
+              style="margin-top:10px;"
+            >
+              ✕ Delete
+            </button>
+          </div>
+
+          <div class="side blue">
+            <div class="tn">Blue</div>
+            <div>${m.blueName}</div>
+            <div class="sc">
+              ${String(m.blueScore).padStart(2,'0')}
+            </div>
+          </div>
+
+        </div>
+      `;
+    }).join('');
+}
+
+async function deleteAllMatchHistory(){
+  const confirmed = confirm(
+    "Are you sure you want to delete ALL match history?"
+  );
+
+  if(!confirmed) return;
+
+  try {
+    console.log("[history] deleting all match history...");
+
+    const response = await api.deleteMatchHistory();
+
+    console.log(
+      "[history] deleted successfully:",
+      response
+    );
+
+    matchHistory = [];
+
+    renderHistory();
+
+    alert("Match history deleted successfully.");
+
+  } catch(error) {
+    console.error(
+      "[history] delete failed:",
+      error
+    );
+
+    alert(
+      "Failed to delete match history. Check the server."
+    );
+  }
+}
+
+async function deleteHistoryEntry(matchId){
+  const confirmed = confirm(
+    "Are you sure you want to delete this match history?"
+  );
+
+  if(!confirmed) return;
+
+  try {
+    console.log(
+      "[history] deleting entry:",
+      matchId
+    );
+
+    const response =
+      await api.deleteHistoryEntry(matchId);
+
+    console.log(
+      "[history] entry deleted successfully:",
+      response
+    );
+
+    matchHistory =
+      matchHistory.filter(
+        entry => entry.matchId !== matchId
+      );
+
+    renderHistory();
+
+  } catch(error) {
+    console.error(
+      "[history] individual delete failed:",
+      error
+    );
+
+    alert(
+      "Failed to delete this match history."
+    );
+  }
+}
+
+/* ===== SETTINGS: toggles + save ===== */
+function toggleSwitch(el){ el.classList.toggle('on'); }
+
+/* Collects every input/select/toggle on the Settings screen into one object.
+   Adjust the keys here if you rename fields — this is the payload sent to PUT /settings. */
+function collectSettingsPayload(){
+  const s = document.getElementById('screen-settings');
+  const nums = [...s.querySelectorAll('input[type="number"]')].map(i=>Number(i.value));
+  const selects = [...s.querySelectorAll('select')].map(sel=>sel.value);
+  const toggles = [...s.querySelectorAll('.switch')].map(sw=>sw.classList.contains('on'));
+  const range = s.querySelector('input[type="range"]');
+  return {
+    matchDurationMin: nums[0], intenseModeTriggerSec: nums[1], goalLimit: nums[2],
+    kickerCooldownSec: nums[3], empCooldownSec: nums[4],
+    winCondition: selects[0], lightingMode: selects[1],
+    suddenDeathOnTie: toggles[0], autoPauseOnDisconnect: toggles[1],
+    kickerEnabled: toggles[2], empEnabled: toggles[3],
+    confettiOnGoal: toggles[4], arenaShakeOnGoal: toggles[5], ledSweepInIntense: toggles[6],
+    goalSound: toggles[7], intenseModeMusic: toggles[8], matchEndMusic: toggles[9],
+    masterVolume: range ? Number(range.value) : undefined,
+  };
+}
+
+async function loadSettingsFromBackend() {
+  try {
+    const response = await api.getSettings();
+
+    const settings = response?.settings ?? response;
+
+    if (!settings) {
+      throw new Error("Settings not received from backend");
+    }
+
+    const screen = document.getElementById("screen-settings");
+
+    if (!screen) return;
+
+    // ---------------------------------------------------------
+    // Number inputs
+    // ---------------------------------------------------------
+
+    const nums = [
+      ...screen.querySelectorAll('input[type="number"]')
+    ];
+
+    if (nums[0]) {
+      nums[0].value = settings.matchDurationMin;
+    }
+
+    if (nums[1]) {
+      nums[1].value = settings.intenseModeTriggerSec;
+    }
+
+    if (nums[2]) {
+      nums[2].value = settings.goalLimit;
+    }
+
+    if (nums[3]) {
+      nums[3].value = settings.kickerCooldownSec;
+    }
+
+    if (nums[4]) {
+      nums[4].value = settings.empCooldownSec;
+    }
+
+    // ---------------------------------------------------------
+    // Selects
+    // ---------------------------------------------------------
+
+    const selects = [
+      ...screen.querySelectorAll("select")
+    ];
+
+    if (selects[0]) {
+      selects[0].value = settings.winCondition;
+    }
+
+    if (selects[1]) {
+      selects[1].value = settings.lightingMode;
+    }
+
+    // ---------------------------------------------------------
+    // Switches
+    // ---------------------------------------------------------
+
+    const values = [
+      settings.suddenDeathOnTie,
+      settings.autoPauseOnDisconnect,
+      settings.kickerEnabled,
+      settings.empEnabled,
+      settings.confettiOnGoal,
+      settings.arenaShakeOnGoal,
+      settings.ledSweepInIntense,
+      settings.goalSound,
+      settings.intenseModeMusic,
+      settings.matchEndMusic,
+    ];
+
+    const switches = [
+      ...screen.querySelectorAll(".switch")
+    ];
+
+    switches.forEach((sw, index) => {
+      sw.classList.toggle("on", Boolean(values[index]));
+    });
+
+    // ---------------------------------------------------------
+    // Master volume
+    // ---------------------------------------------------------
+
+    const range = screen.querySelector(
+      'input[type="range"]'
+    );
+
+    if (range && settings.masterVolume !== undefined) {
+      range.value = settings.masterVolume;
+    }
+
+    console.log("[settings] loaded from backend", settings);
+
+  } catch (error) {
+    console.error(
+      "[settings] failed to load:",
+      error
+    );
+  }
+}
+
+
+async function saveSettingsToBackend() {
+  try {
+    const payload = collectSettingsPayload();
+
+    console.log(
+      "[settings] saving:",
+      payload
+    );
+
+    const response =
+      await api.saveSettings(payload);
+
+    const settings =
+      response?.settings ?? response;
+
+    console.log(
+      "[settings] saved successfully:",
+      settings
+    );
+
+    alert("Settings saved successfully.");
+
+  } catch (error) {
+    console.error(
+      "[settings] save failed:",
+      error
+    );
+
+    alert(
+      "Failed to save settings. Check the server."
+    );
+  }
+}
+
+
+
+function setupSettingsBackend() {
+  const screen =
+    document.getElementById("screen-settings");
+
+  if (!screen) return;
+
+  const saveButton =
+    screen.querySelector("button");
+
+  if (!saveButton) return;
+
+  if (
+    saveButton.textContent
+      .trim()
+      .toLowerCase()
+      .includes("save settings")
+  ) {
+    saveButton.addEventListener(
+      "click",
+      saveSettingsToBackend
+    );
+  }
+}
+
+
+renderPlayers();
+renderQueue();
+renderHistory();
+refSyncDisplay();
+bootstrapFromBackend(); // pulls live match/players/queue/history the moment a backend is configured
+
+loadSettingsFromBackend();
+setupSettingsBackend();
+</script>
+</body>
+</html>

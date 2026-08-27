@@ -1,0 +1,2101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>RoboSoccer — Concept 1: Robo Arena</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+  :root{
+    --bg:#07080a; --panel:#0f1216; --panel2:#141821; --line:#232a35;
+    --red:#ff3b4e; --red-glow:rgba(255,59,78,.45); --red-dim:#2a1013;
+    --blue:#2fb2ff; --blue-glow:rgba(47,178,255,.45); --blue-dim:#0d2032;
+    --txt:#eef1f6; --sub:#8b93a3; --gold:#ffcf4d; --turf:#0e2116; --green:#3ee06b;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--txt);font-family:'Inter',sans-serif;padding:20px;}
+  h1,h2,h3{font-family:'Rajdhani',sans-serif;}
+  .wrap{max-width:1920px;margin:0 auto;}
+
+  /* NAV */
+  .nav{display:flex;gap:4px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:6px;margin-bottom:16px;width:fit-content;}
+  .nav button{background:transparent;border:none;color:var(--sub);padding:9px 20px;border-radius:7px;
+    font-family:'Rajdhani';font-weight:600;font-size:14px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;}
+  .nav button.active{background:var(--panel2);color:var(--gold);}
+
+  .toolbar{display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap;}
+  .toolbar button{background:var(--panel2);border:1px solid var(--line);color:var(--sub);
+    padding:7px 14px;border-radius:6px;font-family:'Inter';font-size:11px;letter-spacing:.5px;
+    text-transform:uppercase;cursor:pointer;font-weight:600;}
+  .toolbar button.active{background:var(--gold);color:#1a1400;border-color:var(--gold);}
+  .toolbar .label{font-size:11px;color:var(--sub);text-transform:uppercase;letter-spacing:1px;margin-right:4px;}
+
+  .screen{display:none;}
+  .screen.active{display:block;animation:fadein .3s ease;}
+  @keyframes fadein{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
+
+  /* ===== ARENA HERO ===== */
+  .arena{
+    position:relative;border-radius:16px;overflow:hidden;min-height:660px;
+    background:
+      radial-gradient(ellipse 900px 500px at 50% -10%, rgba(255,207,77,.10), transparent 60%),
+      radial-gradient(ellipse 700px 400px at 8% 30%, var(--red-glow) 0%, transparent 55%),
+      radial-gradient(ellipse 700px 400px at 92% 30%, var(--blue-glow) 0%, transparent 55%),
+      linear-gradient(180deg, #0a0d10 0%, var(--turf) 130%);
+    border:1px solid var(--line);
+  }
+  .arena::before{ /* subtle turf shading, no grid */
+    content:"";position:absolute;inset:0;opacity:.5;pointer-events:none;
+    background:radial-gradient(ellipse 1000px 300px at 50% 100%, rgba(62,224,107,.06), transparent 70%);
+  }
+  .pitch-lines{position:absolute;inset:0;z-index:0;width:100%;height:100%;pointer-events:none;opacity:.9;}
+  .goalpost{position:absolute;top:50%;transform:translateY(-50%);width:64px;height:210px;z-index:1;pointer-events:none;}
+  .goalpost.left{left:4px;}
+  .goalpost.right{right:4px;}
+  .goalpost .frame{position:absolute;inset:0;border:4px solid rgba(255,255,255,.4);border-radius:6px;
+    box-shadow:0 0 14px rgba(255,255,255,.12);}
+  .goalpost.left .frame{border-right:none;border-radius:6px 0 0 6px;}
+  .goalpost.right .frame{border-left:none;border-radius:0 6px 6px 0;}
+  .goalpost .net{position:absolute;inset:4px;opacity:.55;
+    background-image:
+      repeating-linear-gradient(0deg, rgba(255,255,255,.16) 0 1px, transparent 1px 11px),
+      repeating-linear-gradient(90deg, rgba(255,255,255,.16) 0 1px, transparent 1px 11px);}
+  .goalpost.left .net{background-position:-2px 0;}
+  .goalpost.right .net{background-position:2px 0;}
+  .vignette{position:absolute;inset:0;z-index:1;pointer-events:none;
+    background:radial-gradient(ellipse 1100px 700px at 50% 40%, transparent 55%, rgba(0,0,0,.55) 100%);}
+  .grain{position:absolute;inset:0;z-index:1;pointer-events:none;opacity:.05;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");}
+  .beam{position:absolute;top:-10%;width:340px;height:140%;pointer-events:none;z-index:1;opacity:.35;
+    background:linear-gradient(180deg, rgba(255,255,255,.14), transparent 70%);
+    clip-path:polygon(48% 0,52% 0,100% 100%,0 100%);transform-origin:top center;}
+  .beam-a{left:2%;animation:beamsweep 9s ease-in-out infinite;}
+  .beam-b{right:2%;animation:beamsweep 11s ease-in-out infinite reverse;}
+  @keyframes beamsweep{0%,100%{transform:rotate(-8deg);}50%{transform:rotate(8deg);}}
+  .dust{position:absolute;bottom:74px;width:6px;height:6px;border-radius:50%;
+    background:rgba(230,225,210,.5);z-index:2;pointer-events:none;filter:blur(1px);}
+  .dust1{left:16%;animation:dustrise 3.2s ease-out infinite;}
+  .dust2{left:20%;animation:dustrise 3.6s ease-out infinite 1.1s;}
+  .dust3{right:16%;animation:dustrise 3.4s ease-out infinite .6s;}
+  .dust4{right:21%;animation:dustrise 3s ease-out infinite 1.8s;}
+  @keyframes dustrise{0%{transform:translate(0,0) scale(.6);opacity:0;}
+    20%{opacity:.6;} 100%{transform:translate(-14px,-46px) scale(1.4);opacity:0;}}
+  .led-strip{position:absolute;left:0;right:0;bottom:0;height:6px;z-index:2;
+    background:linear-gradient(90deg,var(--red),var(--gold),var(--blue));opacity:.8;}
+  .arena.intense .led-strip{animation:ledsweep 1.2s linear infinite;background:linear-gradient(90deg,var(--red),var(--gold),var(--red),var(--gold));background-size:200% 100%;}
+  @keyframes ledsweep{to{background-position:200% 0;}}
+  .arena.goal{animation:shake .5s ease;}
+  @keyframes shake{0%,100%{transform:translateX(0);}20%{transform:translateX(-6px);}
+    40%{transform:translateX(5px);}60%{transform:translateX(-3px);}80%{transform:translateX(2px);}}
+  .confetti{position:absolute;inset:0;z-index:6;pointer-events:none;overflow:hidden;display:none;}
+  .arena.goal .confetti{display:block;}
+  .confetti i{position:absolute;top:-10%;width:8px;height:14px;opacity:.9;animation:confettifall 1.6s ease-in forwards;}
+  @keyframes confettifall{0%{transform:translateY(0) rotate(0deg);opacity:1;}
+    100%{transform:translateY(640px) rotate(420deg);opacity:0;}}
+
+  .topbar{position:relative;z-index:3;display:flex;justify-content:space-between;align-items:center;padding:20px 30px 0;}
+  .brand{font-family:'Rajdhani';font-weight:700;font-size:22px;letter-spacing:6px;text-transform:uppercase;line-height:1;}
+  .brand span{color:var(--gold);}
+  .status-pill{display:flex;align-items:center;gap:8px;background:rgba(15,18,22,.7);border:1px solid var(--line);
+    padding:7px 16px;border-radius:999px;font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--green);}
+  .dot.live{background:var(--red);box-shadow:0 0 8px var(--red);animation:pulse 1.2s infinite;}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+  .conn{font-size:11px;color:var(--sub);display:flex;gap:16px;}
+
+  .intense-banner{position:relative;z-index:3;text-align:center;height:0;overflow:visible;}
+  .intense-banner .tag{display:none;}
+  .arena.intense .intense-banner .tag{
+    display:inline-block;margin-top:6px;background:linear-gradient(90deg,var(--red),var(--gold),var(--red));
+    background-size:200% auto;animation:sheen 2.2s linear infinite;color:#1a0000;font-family:'Rajdhani';
+    font-weight:700;font-size:22px;letter-spacing:6px;padding:8px 34px;border-radius:6px;text-transform:uppercase;
+    box-shadow:0 0 34px rgba(255,59,78,.55);
+  }
+  @keyframes sheen{to{background-position:200% center;}}
+  .arena.intense{animation:arenapulse 1.6s ease-in-out infinite;}
+  @keyframes arenapulse{
+    0%,100%{box-shadow:inset 0 0 0 1px rgba(255,59,78,.3),0 0 40px rgba(255,59,78,.1);}
+    50%{box-shadow:inset 0 0 0 2px rgba(255,59,78,.65),0 0 80px rgba(255,59,78,.25);}
+  }
+
+  .goal-flash{position:absolute;inset:0;z-index:5;display:none;align-items:center;justify-content:center;
+    background:rgba(0,0,0,.35);}
+  .arena.goal .goal-flash{display:flex;}
+  .goal-text{font-family:'Rajdhani';font-weight:700;font-size:110px;letter-spacing:6px;text-transform:uppercase;
+    text-shadow:0 0 50px currentColor;}
+  .arena.goal.goal-red .goal-text{color:var(--red);}
+  .arena.goal.goal-blue .goal-text{color:var(--blue);}
+
+  .field{position:relative;z-index:2;display:grid;grid-template-columns:1fr 260px 1fr;align-items:center;
+    gap:18px;padding:10px 20px 6px;}
+
+  .truckside{text-align:center;position:relative;}
+  .tname{font-family:'Rajdhani';font-weight:700;font-size:22px;letter-spacing:4px;text-transform:uppercase;}
+  .truckside.red .tname{color:var(--red);text-shadow:0 0 16px rgba(255,59,78,.5);}
+  .truckside.blue .tname{color:var(--blue);text-shadow:0 0 16px rgba(47,178,255,.5);}
+  .pname{font-size:13px;color:var(--sub);font-weight:600;letter-spacing:2px;text-transform:uppercase;margin:2px 0 8px;}
+  .truck-wrap{max-width:280px;margin:0 auto;animation:truckidle 2.8s ease-in-out infinite;}
+  .truckside.red .truck-wrap{transform:rotate(-1.5deg);}
+  .truckside.blue .truck-wrap{transform:rotate(1.5deg);animation-delay:.4s;}
+  @keyframes truckidle{0%,100%{translate:0 0;}50%{translate:0 -5px;}}
+  .truck-svg{width:100%;height:auto;filter:drop-shadow(0 8px 16px rgba(0,0,0,.55));display:block;}
+  .truckside.red .truck-svg{color:var(--red);}
+  .truckside.blue .truck-svg{color:var(--blue);}
+  .truckside.blue .truck-svg{transform:scaleX(-1);}
+  .tire{fill:#1a1d22;} .rim{fill:#454b57;} .glass{fill:rgba(180,220,255,.35);} .light{fill:var(--gold);
+    animation:hlpulse 1.7s ease-in-out infinite;}
+  @keyframes hlpulse{0%,100%{opacity:1;}50%{opacity:.45;}}
+  .spokes{transform-box:fill-box;transform-origin:center;animation:wheelspin 2.4s linear infinite;}
+  .arena.intense .spokes{animation-duration:.5s;}
+  @keyframes wheelspin{to{transform:rotate(360deg);}}
+  .arena.intense .truck-svg{filter:drop-shadow(0 0 20px currentColor) drop-shadow(0 8px 18px rgba(0,0,0,.6));}
+  .score{font-family:'Rajdhani';font-weight:700;font-size:120px;line-height:1;color:#fff;margin-top:6px;
+    transition:transform .15s ease;}
+  .score.pop{animation:pop .45s ease;}
+  @keyframes pop{0%{transform:scale(1);}30%{transform:scale(1.32);}100%{transform:scale(1);}}
+  .powerups{display:flex;gap:8px;justify-content:center;margin-top:12px;}
+  .pw{font-size:10px;padding:4px 10px;border-radius:999px;border:1px solid var(--line);color:var(--sub);
+    text-transform:uppercase;letter-spacing:1px;font-weight:600;background:rgba(15,18,22,.6);}
+  .pw.ready{color:var(--gold);border-color:rgba(255,207,77,.4);}
+
+  .center{text-align:center;position:relative;z-index:2;}
+  .ball-wrap{width:56px;height:56px;margin:0 auto 10px;animation:ballbob 2.6s ease-in-out infinite;position:relative;}
+  .ball{width:56px;height:56px;border-radius:50%;position:relative;animation:ballspin 4s linear infinite;
+    background:radial-gradient(circle at 35% 30%, #fff, #d8dde3 60%, #aab0ba 100%);
+    box-shadow:0 6px 14px rgba(0,0,0,.5), inset 0 -6px 10px rgba(0,0,0,.15);}
+  @keyframes ballbob{0%,100%{transform:translateY(0);}50%{transform:translateY(-7px);}}
+  @keyframes ballspin{to{transform:rotate(360deg);}}
+  .ball::before,.ball::after{content:"";position:absolute;background:#20242b;}
+  .ball::before{width:16px;height:16px;border-radius:3px;top:18px;left:20px;transform:rotate(20deg);}
+  .ball::after{width:10px;height:10px;border-radius:2px;top:8px;left:8px;transform:rotate(10deg);}
+
+  /* ===== GOAL KICK ANIMATION ===== */
+  .ball-wrap.kicking{animation:none;}
+  .ball-wrap.kicking .ball{animation:ballKickSpin .85s cubic-bezier(.3,.7,.35,1) forwards;}
+  @keyframes ballKickSpin{
+    0%{transform:translate(0,0) scale(1) rotate(0deg);}
+    55%{transform:translate(calc(var(--kick-dx,0px)*.8), -22px) scale(.55) rotate(520deg);}
+    100%{transform:translate(var(--kick-dx,0px), 4px) scale(.22) rotate(760deg);opacity:0;}
+  }
+  .ball-wrap.returning{animation:none;}
+  .ball-wrap.returning .ball{animation:ballReturnPop .45s ease-out forwards;}
+  @keyframes ballReturnPop{
+    0%{transform:translate(0,0) scale(.2);opacity:0;}
+    70%{transform:translate(0,0) scale(1.15);opacity:1;}
+    100%{transform:translate(0,0) scale(1);opacity:1;}
+  }
+  .goalpost .impact{position:absolute;top:50%;left:50%;width:14px;height:14px;border-radius:50%;
+    background:radial-gradient(circle, #fff 0%, rgba(255,255,255,.6) 40%, transparent 72%);
+    transform:translate(-50%,-50%) scale(.2);opacity:0;pointer-events:none;}
+  .goalpost.flash .impact{animation:goalImpact .55s ease-out;}
+  @keyframes goalImpact{
+    0%{opacity:1;transform:translate(-50%,-50%) scale(.2);}
+    100%{opacity:0;transform:translate(-50%,-50%) scale(4.5);}
+  }
+  .goalpost.flash .frame{animation:frameFlash .55s ease-out;}
+  @keyframes frameFlash{0%{box-shadow:0 0 4px 2px rgba(255,255,255,.9);}100%{box-shadow:0 0 14px rgba(255,255,255,.12);}}
+
+  .truckside.red.kicking .truck-wrap{animation:kickLungeRed .6s ease;}
+  .truckside.blue.kicking .truck-wrap{animation:kickLungeBlue .6s ease;}
+  @keyframes kickLungeRed{
+    0%{transform:rotate(-1.5deg) translateX(0) scale(1);}
+    25%{transform:rotate(4deg) translateX(22px) scale(1.06);}
+    55%{transform:rotate(-3deg) translateX(-6px) scale(1);}
+    100%{transform:rotate(-1.5deg) translateX(0) scale(1);}
+  }
+  @keyframes kickLungeBlue{
+    0%{transform:rotate(1.5deg) translateX(0) scale(1);}
+    25%{transform:rotate(-4deg) translateX(-22px) scale(1.06);}
+    55%{transform:rotate(3deg) translateX(6px) scale(1);}
+    100%{transform:rotate(1.5deg) translateX(0) scale(1);}
+  }
+  .truckside.kicking .truck-svg{filter:drop-shadow(0 0 16px currentColor) drop-shadow(0 8px 18px rgba(0,0,0,.6));}
+  .vs{font-family:'Rajdhani';font-size:14px;color:var(--sub);letter-spacing:5px;text-transform:uppercase;margin-bottom:4px;}
+  .timer{font-family:'Rajdhani';font-weight:700;font-size:94px;line-height:1;color:#fff;}
+  .timer .colon{animation:blink 1s steps(1) infinite;}
+  @keyframes blink{50%{opacity:0;}}
+  .arena.intense .timer{color:var(--red);text-shadow:0 0 40px rgba(255,59,78,.85);animation:tick 1s infinite;}
+  @keyframes tick{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}
+  .matchstate{font-size:13px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--sub);margin-top:8px;}
+  .matchstate.live{color:var(--green);}
+
+  .ticker{position:relative;z-index:2;margin:14px 20px 0;border-top:1px solid var(--line);padding:12px 10px;
+    display:flex;gap:22px;overflow:hidden;font-size:12px;color:var(--sub);}
+  .ticker b{color:var(--txt);}
+
+  /* referee panel — permanent, docked above the arena (this is what drives the live match) */
+  .ref-panel{position:sticky;top:10px;z-index:30;margin-bottom:16px;}
+  .dock{background:var(--panel);border:1px solid rgba(255,207,77,.4);border-radius:12px;padding:16px 22px;
+    box-shadow:0 0 0 1px rgba(255,207,77,.12),0 10px 30px rgba(0,0,0,.4);}
+  .dockhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;}
+  .dockhead h3{font-size:13px;color:var(--gold);text-transform:uppercase;letter-spacing:2px;font-weight:700;
+    display:flex;align-items:center;gap:8px;}
+  .dockhead h3 .liveDotSmall{width:8px;height:8px;border-radius:50%;background:var(--gold);flex-shrink:0;}
+  .dockhead .dockstate{font-size:11px;color:var(--sub);text-transform:uppercase;letter-spacing:1px;font-weight:600;}
+  .dockhead .dockstate b{color:var(--txt);}
+  .dockrow{display:flex;gap:22px;flex-wrap:wrap;}
+  .grp{display:flex;flex-direction:column;gap:8px;}
+  .grp .gl{font-size:10px;color:var(--sub);text-transform:uppercase;letter-spacing:1px;}
+  .btns{display:flex;gap:8px;flex-wrap:wrap;}
+  .btn{background:var(--panel2);border:1px solid var(--line);color:var(--txt);padding:11px 18px;border-radius:9px;
+    font-size:13px;font-weight:600;cursor:pointer;position:relative;}
+  .btn::after{content:"";position:absolute;inset:0;border-radius:9px;box-shadow:inset 0 1px 0 rgba(255,255,255,.06);}
+  .btn:active{transform:translateY(1px);}
+  .btn.red{border-color:rgba(255,59,78,.4);color:var(--red);}
+  .btn.blue{border-color:rgba(47,178,255,.4);color:var(--blue);}
+  .btn.danger{background:var(--red);color:#fff;border-color:var(--red);}
+  .btn.warn{background:var(--gold);color:#1a1400;border-color:var(--gold);}
+  .btn:disabled{opacity:.4;cursor:not-allowed;}
+  .btn:disabled:active{transform:none;}
+
+  /* ===== SECONDARY SCREENS ===== */
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px;}
+  .card h4{font-size:11px;color:var(--sub);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:14px;font-weight:700;}
+  .device{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid var(--line);gap:10px;}
+  .device:last-child{border-bottom:none;}
+  .device .name{font-size:13px;font-weight:600;}
+  .device .meta{font-size:11px;color:var(--sub);}
+  .mini-truck{width:56px;height:34px;flex-shrink:0;}
+  .stat-online{font-size:11px;color:var(--green);font-weight:700;text-transform:uppercase;}
+  .stat-offline{font-size:11px;color:var(--sub);font-weight:700;text-transform:uppercase;}
+
+  .pair-chain{display:flex;align-items:center;justify-content:space-between;padding:16px 0;border-bottom:1px solid var(--line);}
+  .pair-chain:last-child{border-bottom:none;}
+  .node{display:flex;align-items:center;gap:10px;background:var(--panel2);border:1px solid var(--line);
+    border-radius:9px;padding:8px 16px;font-size:13px;font-weight:600;min-width:190px;}
+  .node .mini-truck{width:44px;height:26px;}
+  .arrow{color:var(--gold);font-size:20px;}
+
+  .match-card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px 22px;
+    display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+  .match-card .mid{text-align:center;font-family:'Rajdhani';color:var(--sub);font-size:12px;letter-spacing:2px;text-transform:uppercase;}
+  .match-card .side{text-align:center;min-width:140px;}
+  .match-card .side .tn{font-family:'Rajdhani';font-weight:700;font-size:16px;letter-spacing:2px;}
+  .match-card .side.red .tn{color:var(--red);} .match-card .side.blue .tn{color:var(--blue);}
+  .match-card .side .sc{font-family:'Rajdhani';font-weight:700;font-size:36px;color:#fff;}
+  .match-card .winner{font-size:11px;color:var(--gold);font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-top:4px;}
+
+  .audio-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--line);}
+  .audio-row:last-child{border-bottom:none;}
+  .audio-row .l{font-size:12px;color:var(--sub);text-transform:uppercase;letter-spacing:1px;}
+  .audio-row .v{font-size:14px;font-weight:600;}
+  .track{display:flex;align-items:center;gap:14px;padding:16px;background:var(--panel2);border-radius:10px;margin-bottom:14px;}
+  .track .art{width:46px;height:46px;border-radius:8px;background:linear-gradient(135deg,var(--red),var(--blue));}
+  .track .tt{font-size:13px;font-weight:600;} .track .ta{font-size:11px;color:var(--sub);}
+
+  .section-title{margin:8px 0 14px;display:flex;align-items:center;gap:12px;}
+  .section-title h2{font-size:20px;letter-spacing:1px;}
+  .footer-note{margin-top:30px;text-align:center;color:var(--sub);font-size:11px;letter-spacing:1px;}
+
+  /* ===== FORMS / PLAYERS / SETTINGS ===== */
+  .form-row{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;}
+  .form-row label{font-size:11px;color:var(--sub);text-transform:uppercase;letter-spacing:1px;font-weight:600;}
+  .form-row input,.form-row select{background:var(--panel2);border:1px solid var(--line);color:var(--txt);
+    padding:10px 12px;border-radius:8px;font-family:'Inter';font-size:13px;width:100%;}
+  .form-row input:focus,.form-row select:focus{outline:none;border-color:var(--gold);}
+  .form-row input[type="range"]{padding:0;accent-color:var(--gold);}
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 18px;}
+  .btn-primary{background:var(--gold);color:#1a1400;border:none;padding:11px 22px;border-radius:9px;font-weight:700;
+    font-size:13px;cursor:pointer;text-transform:uppercase;letter-spacing:1px;font-family:'Rajdhani';}
+  .btn-primary:active{transform:translateY(1px);}
+  .roster-table{width:100%;border-collapse:collapse;}
+  .roster-table th{text-align:left;font-size:10px;color:var(--sub);text-transform:uppercase;letter-spacing:1px;
+    padding:8px 10px;border-bottom:1px solid var(--line);}
+  .roster-table td{padding:10px;border-bottom:1px solid var(--line);font-size:13px;}
+  .team-badge{padding:3px 10px;border-radius:999px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;}
+  .team-badge.red{background:var(--red-dim);color:var(--red);}
+  .team-badge.blue{background:var(--blue-dim);color:var(--blue);}
+  .team-badge.bench{background:var(--panel2);color:var(--sub);}
+  .icon-btn{background:none;border:none;color:var(--sub);cursor:pointer;font-size:12px;font-weight:600;
+    text-transform:uppercase;letter-spacing:.5px;}
+  .icon-btn:hover{color:var(--red);}
+  .toggle-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--line);
+    font-size:13px;}
+  .toggle-row:last-child{border-bottom:none;}
+  .switch{position:relative;width:42px;height:24px;background:var(--panel2);border:1px solid var(--line);
+    border-radius:999px;cursor:pointer;flex-shrink:0;}
+  .switch.on{background:var(--gold);border-color:var(--gold);}
+  .switch .knob{position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#fff;
+    transition:left .2s ease;}
+  .switch.on .knob{left:20px;}
+  .save-bar{display:flex;justify-content:flex-end;align-items:center;gap:14px;margin-top:6px;}
+  .save-msg{font-size:12px;color:var(--green);font-weight:600;opacity:0;transition:opacity .3s ease;}
+  .save-msg.show{opacity:1;}
+  .queue-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--line);
+    flex-wrap:wrap;gap:10px;}
+  .queue-row:last-child{border-bottom:none;}
+  .queue-names{font-family:'Rajdhani';font-weight:700;font-size:15px;letter-spacing:.5px;}
+  .queue-names .r{color:var(--red);} .queue-names .b{color:var(--blue);} .queue-names .vs{color:var(--sub);font-size:12px;}
+  .queue-actions{display:flex;gap:8px;}
+  .btn.small{padding:7px 14px;font-size:12px;}
+  .queue-warn{background:var(--red-dim);border:1px solid rgba(255,59,78,.4);border-radius:8px;padding:10px 14px;
+    width:100%;font-size:12px;color:var(--red);display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  .queue-warn select{background:var(--panel2);border:1px solid var(--line);color:var(--txt);padding:6px 10px;
+    border-radius:6px;font-size:12px;}
+  .status-switch{width:36px;height:20px;}
+  .status-switch .knob{width:14px;height:14px;}
+  .status-switch.on .knob{left:18px;}
+</style>
+
+<style id="production-ui-overrides">
+:root{
+  --bg:#05070a;
+  --panel:#0b0f14;
+  --panel2:#10161e;
+  --line:#1b2530;
+  --line2:#263341;
+  --txt:#f4f7fb;
+  --sub:#7f8b9a;
+  --gold:#ffd34f;
+  --red:#ff4054;
+  --blue:#32b7ff;
+  --green:#42e477;
+}
+html,body{min-height:100%;background:
+  radial-gradient(circle at 50% -20%,rgba(255,211,79,.055),transparent 35%),
+  #05070a!important;}
+body{padding:0!important;font-family:Inter,system-ui,sans-serif!important;}
+.wrap{max-width:none!important;min-height:100vh;display:grid;grid-template-columns:220px 1fr;gap:0;margin:0!important;}
+
+.nav{
+  position:sticky!important;top:0;height:100vh;width:220px!important;
+  margin:0!important;padding:22px 14px!important;border:0!important;border-right:1px solid var(--line)!important;
+  border-radius:0!important;background:rgba(8,11,15,.96)!important;
+  display:flex!important;flex-direction:column!important;gap:5px!important;
+}
+.nav:before{
+  content:"ROBO\\A SOCCER";white-space:pre;display:block;
+  font-family:Rajdhani,sans-serif;font-weight:700;font-size:24px;line-height:.82;
+  letter-spacing:4px;color:#fff;padding:5px 12px 28px;
+}
+.nav:after{
+  content:"ARENA CONTROL";display:block;order:-1;
+  position:absolute;top:75px;left:26px;font-size:8px;letter-spacing:2px;color:var(--gold);
+}
+.nav button{
+  width:100%!important;text-align:left!important;padding:12px 14px!important;
+  border-radius:9px!important;font-size:12px!important;letter-spacing:1.5px!important;
+  color:#7d8998!important;transition:.18s!important;
+}
+.nav button:hover{background:#10161d!important;color:#fff!important;}
+.nav button.active{
+  background:linear-gradient(90deg,rgba(255,211,79,.14),rgba(255,211,79,.035))!important;
+  color:var(--gold)!important;box-shadow:inset 3px 0 0 var(--gold)!important;
+}
+.nav button:nth-child(1)::before{content:"●";margin-right:10px;color:var(--green);}
+.nav button:nth-child(2)::before{content:"◈";margin-right:10px;}
+.nav button:nth-child(3)::before{content:"⇄";margin-right:10px;}
+.nav button:nth-child(4)::before{content:"♙";margin-right:10px;}
+.nav button:nth-child(5)::before{content:"◷";margin-right:10px;}
+.nav button:nth-child(6)::before{content:"♫";margin-right:10px;}
+.nav button:nth-child(7)::before{content:"⚙";margin-right:10px;}
+
+.screen{padding:22px 26px 32px;min-width:0;}
+#screen-live{padding-top:18px;}
+.toolbar{display:none!important;}
+
+.ref-panel{
+  position:fixed!important;left:246px;right:26px;bottom:18px;top:auto!important;
+  z-index:100!important;margin:0!important;
+}
+.dock{
+  backdrop-filter:blur(18px);background:rgba(11,15,20,.92)!important;
+  border:1px solid rgba(255,211,79,.25)!important;border-radius:14px!important;
+  padding:10px 14px!important;box-shadow:0 16px 45px rgba(0,0,0,.55)!important;
+}
+.dockhead{margin-bottom:8px!important;}
+.dockhead h3{font-size:11px!important;}
+.dockrow{gap:12px!important;}
+.grp{gap:5px!important;}
+.grp .gl{font-size:8px!important;}
+.btn{padding:8px 11px!important;font-size:11px!important;border-radius:7px!important;}
+.btn.danger{background:#261015!important;color:#ff6574!important;border-color:rgba(255,64,84,.4)!important;}
+
+.arena{
+  min-height:calc(100vh - 90px)!important;height:calc(100vh - 90px)!important;
+  border-radius:18px!important;border:1px solid #1d2934!important;
+  box-shadow:0 25px 80px rgba(0,0,0,.42),inset 0 1px rgba(255,255,255,.04)!important;
+}
+.topbar{padding:18px 24px 0!important;}
+.brand{font-size:18px!important;letter-spacing:5px!important;}
+.status-pill{background:rgba(5,8,12,.7)!important;padding:7px 13px!important;}
+.conn{gap:12px!important;}
+
+.field{
+  grid-template-columns:1fr 230px 1fr!important;
+  padding:45px 30px 12px!important;
+  height:calc(100% - 88px)!important;
+}
+.truck-wrap{max-width:300px!important;}
+.tname{font-size:19px!important;}
+.pname{font-size:11px!important;}
+.score{font-size:106px!important;}
+.timer{font-size:78px!important;}
+.vs{font-size:11px!important;}
+.ball-wrap,.ball{width:48px!important;height:48px!important;}
+.ticker{margin:4px 20px 0!important;opacity:.8;}
+
+.section-title{margin-top:0!important;}
+.card,.match-card{background:linear-gradient(180deg,#0c1117,#090d12)!important;border-color:#1b2530!important;}
+.footer-note{display:none!important;}
+
+@media(max-width:1000px){
+  .wrap{grid-template-columns:76px 1fr;}
+  .nav{width:76px!important;padding:18px 8px!important;}
+  .nav:before{font-size:0;content:"RS";letter-spacing:1px;text-align:center;padding:5px 0 32px;color:var(--gold);}
+  .nav:after{display:none;}
+  .nav button{font-size:0!important;text-align:center!important;padding:13px 6px!important;}
+  .nav button::before{margin:0!important;font-size:15px!important;}
+  .screen{padding:14px;}
+  .ref-panel{left:90px;right:14px;}
+  .arena{height:auto!important;min-height:720px!important;}
+  .field{grid-template-columns:1fr!important;gap:6px!important;height:auto!important;padding-top:32px!important;}
+  .center{order:-1;margin-bottom:4px;}
+  .truck-wrap{max-width:220px!important;}
+  .score{font-size:70px!important;}
+  .ticker{display:none!important;}
+}
+@media(max-width:700px){
+  .wrap{display:block;}
+  .nav{position:relative!important;width:100%!important;height:auto!important;display:flex!important;flex-direction:row!important;overflow:auto;border-right:0!important;border-bottom:1px solid var(--line)!important;}
+  .nav:before,.nav:after{display:none;}
+  .nav button{min-width:100px!important;font-size:10px!important;text-align:center!important;}
+  .nav button::before{display:none;}
+  .screen{padding:10px;}
+  .ref-panel{position:static!important;margin-top:10px!important;}
+  .arena{min-height:760px!important;}
+}
+</style>
+
+</head>
+<body>
+<div class="wrap">
+
+  <div class="nav">
+    <button class="active" id="navLiveBtn" onclick="showScreen('live',this)">Live</button>
+    <button onclick="showScreen('fleet',this)">Fleet</button>
+    <button onclick="showScreen('pairing',this)">Pairing</button>
+    <button onclick="showScreen('players',this)">Players</button>
+    <button onclick="showScreen('history',this)">History</button>
+    <button onclick="showScreen('audio',this)">Audio</button>
+    <button onclick="showScreen('settings',this)">Settings</button>
+  </div>
+
+  <!-- ============ LIVE SCREEN ============ -->
+  <div class="screen active" id="screen-live">
+
+    <div class="toolbar">
+      <span class="label">Design preview</span>
+      <button class="active" id="toolbarReadyBtn" onclick="setState('ready',this)">Match ready</button>
+      <button onclick="setState('live',this)">Match live</button>
+      <button onclick="setState('intense',this)">Intense mode</button>
+      <button onclick="setState('goalred',this)">Goal — red</button>
+      <button onclick="setState('goalblue',this)">Goal — blue</button>
+      <button onclick="setState('ended',this)">Match ended</button>
+      <span style="font-size:10px;color:var(--sub);margin-left:6px;">for previewing visuals only — real scoring happens in the Referee panel below ↓</span>
+    </div>
+
+    <!-- ============ REFEREE PANEL — permanent, always visible, drives the real live match ============ -->
+    <div class="ref-panel" id="refPanel">
+      <div class="dock">
+        <div class="dockhead">
+          <h3><span class="liveDotSmall"></span>Referee control</h3>
+          <div class="dockstate">Score <b id="refScoreLine">03 – 03</b> &nbsp;·&nbsp; Clock <b id="refClockLine">15:00</b> &nbsp;·&nbsp; <b id="refStateLine">Match ready</b></div>
+        </div>
+        <div class="dockrow">
+          <div class="grp"><div class="gl">Match</div><div class="btns">
+            <button class="btn" onclick="refStart()">▶ Start</button>
+            <button class="btn" onclick="refPause()">⏸ Pause</button>
+            <button class="btn" onclick="refResume()">⏵ Resume</button>
+            <button class="btn danger" onclick="refReset()">Reset ⚠</button>
+          </div></div>
+          <div class="grp"><div class="gl">Score</div><div class="btns">
+            <button class="btn red" onclick="refGoal('red')">+1 Goal Red</button>
+            <button class="btn blue" onclick="refGoal('blue')">+1 Goal Blue</button>
+            <button class="btn" onclick="refUndoGoal()">Undo last goal</button>
+          </div></div>
+          <div class="grp"><div class="gl">Timer</div><div class="btns">
+            <button class="btn" onclick="refAdjustTimer(30)">+30 sec</button>
+            <button class="btn" onclick="refAdjustTimer(-30)">-30 sec</button>
+            <button class="btn" onclick="refAdjustTimer(60)">+1 min</button>
+            <button class="btn" onclick="refAdjustTimer(-60)">-1 min</button>
+          </div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="arena" id="arena">
+      <svg class="pitch-lines" viewBox="0 0 1400 660" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+        <line x1="700" y1="20" x2="700" y2="640" stroke="rgba(255,255,255,.16)" stroke-width="3"/>
+        <circle cx="700" cy="330" r="95" fill="none" stroke="rgba(255,255,255,.16)" stroke-width="3"/>
+        <circle cx="700" cy="330" r="4" fill="rgba(255,255,255,.3)"/>
+        <rect x="18" y="215" width="150" height="230" fill="none" stroke="rgba(255,255,255,.16)" stroke-width="3"/>
+        <rect x="18" y="270" width="65" height="120" fill="none" stroke="rgba(255,255,255,.16)" stroke-width="3"/>
+        <path d="M168,275 A55,55 0 0,1 168,385" fill="none" stroke="rgba(255,255,255,.14)" stroke-width="3"/>
+        <rect x="1232" y="215" width="150" height="230" fill="none" stroke="rgba(255,255,255,.16)" stroke-width="3"/>
+        <rect x="1317" y="270" width="65" height="120" fill="none" stroke="rgba(255,255,255,.16)" stroke-width="3"/>
+        <path d="M1232,275 A55,55 0 0,0 1232,385" fill="none" stroke="rgba(255,255,255,.14)" stroke-width="3"/>
+        <path d="M18,20 A24,24 0 0,1 42,20" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="2"/>
+        <path d="M18,640 A24,24 0 0,0 42,640" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="2"/>
+        <path d="M1382,20 A24,24 0 0,0 1358,20" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="2"/>
+        <path d="M1382,640 A24,24 0 0,1 1358,640" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="2"/>
+      </svg>
+      <div class="goalpost left"><div class="frame"></div><div class="net"></div><div class="impact"></div></div>
+      <div class="goalpost right"><div class="frame"></div><div class="net"></div><div class="impact"></div></div>
+      <div class="beam beam-a"></div>
+      <div class="beam beam-b"></div>
+      <div class="vignette"></div>
+      <div class="grain"></div>
+      <span class="dust dust1"></span><span class="dust dust2"></span>
+      <span class="dust dust3"></span><span class="dust dust4"></span>
+      <div class="confetti" id="confetti"></div>
+      <div class="led-strip"></div>
+      <div class="topbar">
+        <div class="brand">Robo<span>Soccer</span></div>
+        <div class="status-pill"><span class="dot" id="statedot"></span><span id="statelabel">Match ready</span></div><div id="uiClock" style="position:absolute;left:50%;transform:translateX(-50%);top:18px;font-family:Rajdhani,sans-serif;font-size:12px;letter-spacing:2px;color:var(--sub);"></div>
+        <div class="conn"><span>● Arena online</span><span>7/7 devices</span></div>
+      </div>
+
+      <div class="intense-banner"><span class="tag">⚡ Intense mode — sudden goal</span></div>
+      <div class="goal-flash"><div class="goal-text" id="goaltext">RED SCORES!</div></div>
+
+      <div class="field">
+        <div class="truckside red">
+          <div class="tname">Red</div>
+          <div class="pname">Satyajeet</div>
+          <div class="truck-wrap">
+          <svg class="truck-svg" viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
+            <circle class="tire" cx="70" cy="132" r="46"/><circle class="rim" cx="70" cy="132" r="17"/>
+            <g class="spokes"><line x1="70" y1="118" x2="70" y2="146" stroke="#6b7280" stroke-width="3"/><line x1="56" y1="132" x2="84" y2="132" stroke="#6b7280" stroke-width="3"/><line x1="60" y1="122" x2="80" y2="142" stroke="#6b7280" stroke-width="3"/><line x1="60" y1="142" x2="80" y2="122" stroke="#6b7280" stroke-width="3"/></g>
+            <circle class="tire" cx="230" cy="132" r="46"/><circle class="rim" cx="230" cy="132" r="17"/>
+            <g class="spokes" style="transform-origin:230px 132px"><line x1="230" y1="118" x2="230" y2="146" stroke="#6b7280" stroke-width="3"/><line x1="216" y1="132" x2="244" y2="132" stroke="#6b7280" stroke-width="3"/><line x1="220" y1="122" x2="240" y2="142" stroke="#6b7280" stroke-width="3"/><line x1="220" y1="142" x2="240" y2="122" stroke="#6b7280" stroke-width="3"/></g>
+            <rect x="55" y="72" width="210" height="44" rx="10" fill="currentColor"/>
+            <path d="M100 72 L128 32 L208 32 L233 72 Z" fill="currentColor"/>
+            <path d="M112 66 L134 40 L196 40 L210 66 Z" class="glass"/>
+            <path d="M120 32 L120 12 L216 12 L216 32" fill="none" stroke="currentColor" stroke-width="6"/>
+            <rect x="246" y="82" width="15" height="10" rx="2" class="light"/>
+            <rect x="44" y="46" width="10" height="30" fill="currentColor"/>
+            <rect x="26" y="40" width="36" height="8" rx="2" fill="currentColor"/>
+          </svg>
+          </div>
+          <div class="score" id="redscore">03</div>
+          <div class="powerups"><div class="pw ready" id="redkicker">Kicker · Ready</div><div class="pw" id="redemp">EMP · Cooldown</div></div>
+        </div>
+
+        <div class="center">
+          <div class="ball-wrap" id="ballWrap"><div class="ball"></div></div>
+          <div class="vs">Round 1 · Best of 1</div>
+          <div class="timer" id="timer">00<span class="colon">:</span>44</div>
+          <div class="matchstate" id="matchstate">Match ready</div>
+        </div>
+
+        <div class="truckside blue">
+          <div class="tname">Blue</div>
+          <div class="pname">Arjun</div>
+          <div class="truck-wrap">
+          <svg class="truck-svg" viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
+            <circle class="tire" cx="70" cy="132" r="46"/><circle class="rim" cx="70" cy="132" r="17"/>
+            <g class="spokes"><line x1="70" y1="118" x2="70" y2="146" stroke="#6b7280" stroke-width="3"/><line x1="56" y1="132" x2="84" y2="132" stroke="#6b7280" stroke-width="3"/><line x1="60" y1="122" x2="80" y2="142" stroke="#6b7280" stroke-width="3"/><line x1="60" y1="142" x2="80" y2="122" stroke="#6b7280" stroke-width="3"/></g>
+            <circle class="tire" cx="230" cy="132" r="46"/><circle class="rim" cx="230" cy="132" r="17"/>
+            <g class="spokes" style="transform-origin:230px 132px"><line x1="230" y1="118" x2="230" y2="146" stroke="#6b7280" stroke-width="3"/><line x1="216" y1="132" x2="244" y2="132" stroke="#6b7280" stroke-width="3"/><line x1="220" y1="122" x2="240" y2="142" stroke="#6b7280" stroke-width="3"/><line x1="220" y1="142" x2="240" y2="122" stroke="#6b7280" stroke-width="3"/></g>
+            <rect x="55" y="72" width="210" height="44" rx="10" fill="currentColor"/>
+            <path d="M100 72 L128 32 L208 32 L233 72 Z" fill="currentColor"/>
+            <path d="M112 66 L134 40 L196 40 L210 66 Z" class="glass"/>
+            <path d="M120 32 L120 12 L216 12 L216 32" fill="none" stroke="currentColor" stroke-width="6"/>
+            <rect x="246" y="82" width="15" height="10" rx="2" class="light"/>
+            <rect x="44" y="46" width="10" height="30" fill="currentColor"/>
+            <rect x="26" y="40" width="36" height="8" rx="2" fill="currentColor"/>
+          </svg>
+          </div>
+          <div class="score" id="bluescore">03</div>
+          <div class="powerups"><div class="pw" id="bluekicker">Kicker · Cooldown</div><div class="pw ready" id="blueemp">EMP · Ready</div></div>
+        </div>
+      </div>
+
+      <div class="ticker">
+        <span><b>GOAL — RED</b> · 08:12</span>
+        <span><b>KICKER ACTIVATED</b> · BLUE · 07:40</span>
+        <span><b>EMP ACTIVATED</b> · RED · 05:02</span>
+        <span><b>MATCH ENTERED INTENSE MODE</b></span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ============ FLEET ============ -->
+  <div class="screen" id="screen-fleet">
+    <div class="section-title"><h2>Fleet health</h2></div>
+    <div class="grid3">
+      <div class="card"><h4>Controllers</h4>
+        <div class="device"><div><div class="name">Controller 1 · Red</div><div class="meta">Paired → Truck 1 · 86%</div></div><span class="stat-online">Online</span></div>
+        <div class="device"><div><div class="name">Controller 2 · Blue</div><div class="meta">Paired → Truck 2 · 91%</div></div><span class="stat-online">Online</span></div>
+        <div class="device"><div><div class="name">Controller 3 · Sub</div><div class="meta">Unpaired</div></div><span class="stat-offline">Offline</span></div>
+      </div>
+      <div class="card"><h4>Trucks</h4>
+        <div class="device"><svg class="mini-truck" viewBox="0 0 320 180" style="color:var(--red)"><circle class="tire" cx="70" cy="132" r="46"/><circle class="tire" cx="230" cy="132" r="46"/><rect x="55" y="72" width="210" height="44" rx="10" fill="currentColor"/><path d="M100 72 L128 32 L208 32 L233 72 Z" fill="currentColor"/></svg><div><div class="name">Truck 1 · Red</div><div class="meta">Kicker ready · 73%</div></div><span class="stat-online">Online</span></div>
+        <div class="device"><svg class="mini-truck" viewBox="0 0 320 180" style="color:var(--blue)"><circle class="tire" cx="70" cy="132" r="46"/><circle class="tire" cx="230" cy="132" r="46"/><rect x="55" y="72" width="210" height="44" rx="10" fill="currentColor"/><path d="M100 72 L128 32 L208 32 L233 72 Z" fill="currentColor"/></svg><div><div class="name">Truck 2 · Blue</div><div class="meta">EMP ready · 68%</div></div><span class="stat-online">Online</span></div>
+        <div class="device"><div><div class="name">Truck 3 · Sub</div><div class="meta">Standby · 100%</div></div><span class="stat-online">Online</span></div>
+      </div>
+      <div class="card"><h4>Arena lighting</h4>
+        <div class="device"><div><div class="name">Lighting ESP32</div><div class="meta">Mode: match live</div></div><span class="stat-online">Online</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ PAIRING ============ -->
+  <div class="screen" id="screen-pairing">
+    <div class="section-title"><h2>Pairing matrix</h2></div>
+    <div class="card">
+      <div class="pair-chain"><div class="node">Controller 1 · Red</div><div class="arrow">→</div>
+        <div class="node"><svg class="mini-truck" viewBox="0 0 320 180" style="color:var(--red)"><circle class="tire" cx="70" cy="132" r="46"/><circle class="tire" cx="230" cy="132" r="46"/><rect x="55" y="72" width="210" height="44" rx="10" fill="currentColor"/></svg>Truck 1 · Red</div>
+        <span class="stat-online">Linked</span></div>
+      <div class="pair-chain"><div class="node">Controller 2 · Blue</div><div class="arrow">→</div>
+        <div class="node"><svg class="mini-truck" viewBox="0 0 320 180" style="color:var(--blue)"><circle class="tire" cx="70" cy="132" r="46"/><circle class="tire" cx="230" cy="132" r="46"/><rect x="55" y="72" width="210" height="44" rx="10" fill="currentColor"/></svg>Truck 2 · Blue</div>
+        <span class="stat-online">Linked</span></div>
+      <div class="pair-chain"><div class="node">Controller 3 · Sub</div><div class="arrow">→</div>
+        <div class="node">Truck 3 · Sub</div><span class="stat-offline">Not paired</span></div>
+    </div>
+  </div>
+
+  <!-- ============ PLAYERS ============ -->
+  <div class="screen" id="screen-players">
+    <div class="section-title"><h2>Players</h2></div>
+
+    <div class="card" style="margin-bottom:18px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+      <div>
+        <div style="font-size:11px;color:var(--sub);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Currently in arena</div>
+        <div style="font-family:'Rajdhani';font-weight:700;font-size:18px;letter-spacing:1px;">
+          <span style="color:var(--red)" id="currentRedName">Satyajeet</span>
+          <span style="color:var(--sub);font-weight:600;"> vs </span>
+          <span style="color:var(--blue)" id="currentBlueName">Arjun</span>
+        </div>
+      </div>
+      <button class="btn-primary" onclick="showScreen('live', document.getElementById('navLiveBtn'))">Go to live screen</button>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <h4>Add player</h4>
+        <div class="form-row"><label>Player name</label><input type="text" id="newPlayerName" placeholder="e.g. Kabir"></div>
+        <div class="form-grid">
+          <div class="form-row"><label>Team</label>
+            <select id="newPlayerTeam">
+              <option value="red">Red</option>
+              <option value="blue">Blue</option>
+              <option value="bench">Bench</option>
+            </select>
+          </div>
+          <div class="form-row"><label>Controller</label>
+            <select id="newPlayerController">
+              <option>Controller 1 · Red</option>
+              <option>Controller 2 · Blue</option>
+              <option>Controller 3 · Sub</option>
+              <option>—</option>
+            </select>
+          </div>
+        </div>
+        <div class="toggle-row" style="border-bottom:none;padding-top:0;">
+          <div>Available to play</div>
+          <div class="switch on" id="newPlayerAvailable" onclick="toggleSwitch(this)"><div class="knob"></div></div>
+        </div>
+        <button class="btn-primary" onclick="addPlayer()" style="margin-top:8px;">+ Add player</button>
+      </div>
+
+      <div class="card">
+        <h4>Set up next match</h4>
+        <div class="form-grid">
+          <div class="form-row"><label>Red player</label><select id="matchRedPlayer"></select></div>
+          <div class="form-row"><label>Blue player</label><select id="matchBluePlayer"></select></div>
+        </div>
+        <div id="setupWarning" style="display:none;font-size:12px;color:var(--gold);margin:-4px 0 12px;">
+          ⚠ Only players marked "Available" show up here — toggle status in the roster below.
+        </div>
+        <div id="setupError" style="display:none;font-size:12px;color:var(--red);margin:-4px 0 12px;"></div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <button class="btn-primary" onclick="startMatchNow()">▶ Start this match now</button>
+          <button class="btn" onclick="addToQueue()">+ Add to queue</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:18px;">
+      <h4>Match queue · what's coming up</h4>
+      <div id="queueList"></div>
+      <div id="queueEmpty" style="font-size:13px;color:var(--sub);padding:6px 0;display:none;">No matches queued yet — set one up above.</div>
+    </div>
+
+    <div class="card" style="margin-top:18px;">
+      <h4>Roster · saved players</h4>
+      <table class="roster-table">
+        <thead><tr><th>Name</th><th>Team</th><th>Controller</th><th>Matches</th><th>Wins</th><th>Status</th><th></th></tr></thead>
+        <tbody id="playersBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ============ HISTORY ============ -->
+  <div class="screen" id="screen-history">
+    <div class="section-title"><h2>Match history</h2></div>
+    <div id="historyList"></div>
+  </div>
+
+  <!-- ============ AUDIO ============ -->
+  <div class="screen" id="screen-audio">
+    <div class="section-title"><h2>Audio / Spotify</h2></div>
+    <div class="grid2">
+      <div class="card"><h4>Playback</h4>
+        <div class="track"><div class="art"></div><div><div class="tt">Arena Anthem — Warmup Mix</div><div class="ta">Spotify · connected</div></div></div>
+        <div class="audio-row"><div class="l">Match audio mode</div><div class="v">Live match</div></div>
+        <div class="audio-row"><div class="l">Volume</div><div class="v">72%</div></div>
+      </div>
+      <div class="card"><h4>Event sounds</h4>
+        <div class="audio-row"><div class="l">Goal sound</div><div class="v">Enabled</div></div>
+        <div class="audio-row"><div class="l">Intense mode music</div><div class="v">Enabled</div></div>
+        <div class="audio-row"><div class="l">Match end music</div><div class="v">Enabled</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ SETTINGS ============ -->
+  <div class="screen" id="screen-settings">
+    <div class="section-title"><h2>Game settings</h2></div>
+    <div class="grid2">
+      <div class="card">
+        <h4>Match rules</h4>
+        <div class="form-grid">
+          <div class="form-row"><label>Match duration (min)</label><input type="number" value="15"></div>
+          <div class="form-row"><label>Intense mode trigger (sec left)</label><input type="number" value="60"></div>
+        </div>
+        <div class="form-row"><label>Win condition</label>
+          <select>
+            <option>Most goals when time ends</option>
+            <option>First to N goals</option>
+            <option>Golden goal / sudden death</option>
+          </select>
+        </div>
+        <div class="form-row"><label>Goal limit (if first-to-N)</label><input type="number" value="5"></div>
+        <div class="toggle-row"><div>Sudden death on tie</div><div class="switch on" onclick="toggleSwitch(this)"><div class="knob"></div></div></div>
+        <div class="toggle-row"><div>Auto-pause on device disconnect</div><div class="switch on" onclick="toggleSwitch(this)"><div class="knob"></div></div></div>
+      </div>
+
+      <div class="card">
+        <h4>Power-ups</h4>
+        <div class="form-grid">
+          <div class="form-row"><label>Kicker cooldown (sec)</label><input type="number" value="30"></div>
+          <div class="form-row"><label>EMP cooldown (sec)</label><input type="number" value="45"></div>
+        </div>
+        <div class="toggle-row"><div>Kicker enabled</div><div class="switch on" onclick="toggleSwitch(this)"><div class="knob"></div></div></div>
+        <div class="toggle-row"><div>EMP enabled</div><div class="switch on" onclick="toggleSwitch(this)"><div class="knob"></div></div></div>
+      </div>
+
+      <div class="card">
+        <h4>Arena & lighting</h4>
+        <div class="form-row"><label>Lighting mode</label>
+          <select>
+            <option>Match live (auto)</option>
+            <option>Static red / blue</option>
+            <option>Rainbow idle</option>
+            <option>Manual</option>
+          </select>
+        </div>
+        <div class="toggle-row"><div>Confetti on goal</div><div class="switch on" onclick="toggleSwitch(this)"><div class="knob"></div></div></div>
+        <div class="toggle-row"><div>Arena shake on goal</div><div class="switch on" onclick="toggleSwitch(this)"><div class="knob"></div></div></div>
+        <div class="toggle-row"><div>LED sweep in intense mode</div><div class="switch on" onclick="toggleSwitch(this)"><div class="knob"></div></div></div>
+      </div>
+
+      <div class="card">
+        <h4>Audio</h4>
+        <div class="toggle-row"><div>Goal sound</div><div class="switch on" onclick="toggleSwitch(this)"><div class="knob"></div></div></div>
+        <div class="toggle-row"><div>Intense mode music</div><div class="switch on" onclick="toggleSwitch(this)"><div class="knob"></div></div></div>
+        <div class="toggle-row"><div>Match end music</div><div class="switch on" onclick="toggleSwitch(this)"><div class="knob"></div></div></div>
+        <div class="form-row" style="margin-top:10px;"><label>Master volume</label><input type="range" min="0" max="100" value="72"></div>
+      </div>
+    </div>
+
+    <div class="save-bar">
+      <span class="save-msg" id="settingsSavedMsg">✓ Settings saved</span>
+      <button class="btn-primary" onclick="saveSettings()">Save settings</button>
+    </div>
+  </div>
+
+  <div class="footer-note">RoboSoccer · Concept 1 — Robo Arena · 1920×1080 reference layout</div>
+</div>
+
+<script>
+let redScore = 3, blueScore = 3;
+function setTimer(el, text){ const parts = text.split(':'); el.innerHTML = parts[0]+'<span class="colon">:</span>'+parts[1]; }
+function showScreen(name, el){
+  document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+name).classList.add('active');
+}
+function burstConfetti(color){
+  const box = document.getElementById('confetti');
+  box.innerHTML = '';
+  const colors = [color, '#ffcf4d', '#ffffff'];
+  for(let i=0;i<24;i++){
+    const c = document.createElement('i');
+    c.style.left = (Math.random()*100)+'%';
+    c.style.background = colors[i%colors.length];
+    c.style.animationDelay = (Math.random()*.4)+'s';
+    c.style.animationDuration = (1.2+Math.random()*.8)+'s';
+    box.appendChild(c);
+  }
+}
+let __ballTimer1 = null, __ballTimer2 = null, __ballTimer3 = null;
+function triggerTruckKick(side){
+  const truck = document.querySelector('.truckside.'+side);
+  if(!truck) return;
+  truck.classList.remove('kicking');
+  void truck.offsetWidth;
+  truck.classList.add('kicking');
+  setTimeout(()=>truck.classList.remove('kicking'), 650);
+}
+function kickBallTo(direction, side){
+  const ballWrap = document.getElementById('ballWrap');
+  const goal = document.querySelector('.goalpost.'+direction);
+  if(!ballWrap || !goal) return;
+  clearTimeout(__ballTimer1); clearTimeout(__ballTimer2); clearTimeout(__ballTimer3);
+
+  const ballRect = ballWrap.getBoundingClientRect();
+  const goalRect = goal.getBoundingClientRect();
+  const dx = (goalRect.left + goalRect.width/2) - (ballRect.left + ballRect.width/2);
+  ballWrap.style.setProperty('--kick-dx', dx+'px');
+
+  ballWrap.classList.remove('returning');
+  ballWrap.classList.add('kicking');
+  triggerTruckKick(side);
+
+  __ballTimer1 = setTimeout(()=>{
+    goal.classList.add('flash');
+    setTimeout(()=>goal.classList.remove('flash'), 550);
+  }, 830);
+
+  __ballTimer2 = setTimeout(()=>{
+    ballWrap.classList.remove('kicking');
+    void ballWrap.offsetWidth;
+    ballWrap.classList.add('returning');
+  }, 900);
+
+  __ballTimer3 = setTimeout(()=>{
+    ballWrap.classList.remove('returning');
+  }, 1400);
+}
+function setState(state, el){
+  document.querySelectorAll('.toolbar button').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  const arena = document.getElementById('arena');
+  arena.classList.remove('intense','goal','goal-red','goal-blue');
+  const dot = document.getElementById('statedot');
+  const label = document.getElementById('statelabel');
+  const matchstate = document.getElementById('matchstate');
+  const timer = document.getElementById('timer');
+  const goaltext = document.getElementById('goaltext');
+  const redEl = document.getElementById('redscore');
+  const blueEl = document.getElementById('bluescore');
+  dot.classList.remove('live'); matchstate.classList.remove('live');
+
+  if(state==='ready'){ label.textContent='Match ready'; matchstate.textContent='Match ready'; setTimer(timer,'15:00'); }
+  if(state==='live'){ dot.classList.add('live'); label.textContent='Match live'; matchstate.textContent='Match live'; matchstate.classList.add('live'); setTimer(timer,'08:12'); }
+  if(state==='intense'){ dot.classList.add('live'); label.textContent='Intense mode'; matchstate.textContent='Intense mode'; matchstate.classList.add('live'); setTimer(timer,'00:44'); arena.classList.add('intense'); }
+  if(state==='goalred'){
+    dot.classList.add('live'); label.textContent='Match live'; matchstate.textContent='Match live'; matchstate.classList.add('live');
+    goaltext.textContent='RED SCORES!'; arena.classList.add('goal','goal-red'); burstConfetti('#ff3b4e');
+    redScore++; redEl.textContent = String(redScore).padStart(2,'0'); redEl.classList.remove('pop'); void redEl.offsetWidth; redEl.classList.add('pop');
+    kickBallTo('right','red');
+  }
+  if(state==='goalblue'){
+    dot.classList.add('live'); label.textContent='Match live'; matchstate.textContent='Match live'; matchstate.classList.add('live');
+    goaltext.textContent='BLUE SCORES!'; arena.classList.add('goal','goal-blue'); burstConfetti('#2fb2ff');
+    blueScore++; blueEl.textContent = String(blueScore).padStart(2,'0'); blueEl.classList.remove('pop'); void blueEl.offsetWidth; blueEl.classList.add('pop');
+    kickBallTo('left','blue');
+  }
+  if(state==='ended'){
+    const winner = redScore>blueScore ? 'red' : (blueScore>redScore ? 'blue' : 'draw');
+    label.textContent='Match ended';
+    matchstate.textContent = winner==='draw' ? ('Match drawn '+redScore+' – '+blueScore)
+      : ((winner==='red'?'Red wins ':'Blue wins ')+redScore+' – '+blueScore);
+    setTimer(timer,'00:00');
+    recordMatchResult(winner);
+  }
+}
+/* ===== REFEREE PANEL — this is the real control surface for the live match ===== */
+let matchSeconds = 900;       // 15:00 default, matches Settings > Match duration
+let matchRunning = false;
+let matchHasEnded = false;
+let refTimerInterval = null;
+let goalLog = []; // for Undo last goal
+
+function fmtClock(sec){
+  sec = Math.max(0, Math.round(sec));
+  const m = Math.floor(sec/60), s = sec%60;
+  return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+}
+function refSyncDisplay(){
+  setTimer(document.getElementById('timer'), fmtClock(matchSeconds));
+  document.getElementById('refClockLine').textContent = fmtClock(matchSeconds);
+  document.getElementById('refScoreLine').textContent = String(redScore).padStart(2,'0')+' – '+String(blueScore).padStart(2,'0');
+}
+function refSetStateLine(label){ document.getElementById('refStateLine').textContent = label; }
+
+function refStart(){
+  if(matchRunning || matchHasEnded) return;
+  matchRunning = true;
+  document.getElementById('statedot').classList.add('live');
+  document.getElementById('statelabel').textContent = 'Match live';
+  document.getElementById('matchstate').textContent = 'Match live';
+  document.getElementById('matchstate').classList.add('live');
+  refSetStateLine('Match live');
+  refRunInterval();
+}
+function refPause(){
+  if(!matchRunning) return;
+  matchRunning = false;
+  clearInterval(refTimerInterval);
+  document.getElementById('statelabel').textContent = 'Match paused';
+  document.getElementById('matchstate').textContent = 'Match paused';
+  refSetStateLine('Match paused');
+}
+function refResume(){
+  if(matchRunning || matchHasEnded) return;
+  matchRunning = true;
+  document.getElementById('statelabel').textContent = 'Match live';
+  document.getElementById('matchstate').textContent = 'Match live';
+  document.getElementById('matchstate').classList.add('live');
+  refSetStateLine('Match live');
+  refRunInterval();
+}
+function refRunInterval(){
+  clearInterval(refTimerInterval);
+  refTimerInterval = setInterval(()=>{
+    if(!matchRunning) return;
+    matchSeconds--;
+    const arena = document.getElementById('arena');
+    if(matchSeconds<=60 && matchSeconds>0){
+      arena.classList.add('intense');
+      document.getElementById('statelabel').textContent = 'Intense mode';
+      document.getElementById('matchstate').textContent = 'Intense mode';
+      refSetStateLine('Intense mode');
+    }
+    if(matchSeconds<=0){ matchSeconds = 0; refSyncDisplay(); refEndMatch(); return; }
+    refSyncDisplay();
+  }, 1000);
+}
+function refReset(){
+  if(!confirm('Reset match? This clears the score, timer and power-up cooldowns.')) return;
+  clearInterval(refTimerInterval);
+  matchRunning = false; matchHasEnded = false; goalLog = [];
+  redScore = 0; blueScore = 0; matchSeconds = 900;
+  document.getElementById('redscore').textContent = '00';
+  document.getElementById('bluescore').textContent = '00';
+  const arena = document.getElementById('arena');
+  arena.classList.remove('intense','goal','goal-red','goal-blue');
+  document.getElementById('statedot').classList.remove('live');
+  document.getElementById('statelabel').textContent = 'Match ready';
+  document.getElementById('matchstate').textContent = 'Match ready';
+  document.getElementById('matchstate').classList.remove('live');
+  refSetStateLine('Match ready');
+  refResetPowerups();
+  refSyncDisplay();
+}
+function refGoal(side){
+  const arena = document.getElementById('arena');
+  arena.classList.remove('goal','goal-red','goal-blue');
+  void arena.offsetWidth;
+  const goaltext = document.getElementById('goaltext');
+  if(side==='red'){
+    redScore++;
+    const el = document.getElementById('redscore');
+    el.textContent = String(redScore).padStart(2,'0'); el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop');
+    goaltext.textContent = 'RED SCORES!'; arena.classList.add('goal','goal-red'); burstConfetti('#ff3b4e'); kickBallTo('right','red');
+  } else {
+    blueScore++;
+    const el = document.getElementById('bluescore');
+    el.textContent = String(blueScore).padStart(2,'0'); el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop');
+    goaltext.textContent = 'BLUE SCORES!'; arena.classList.add('goal','goal-blue'); burstConfetti('#2fb2ff'); kickBallTo('left','blue');
+  }
+  goalLog.push(side);
+  refSyncDisplay();
+  setTimeout(()=>arena.classList.remove('goal','goal-red','goal-blue'), 1500);
+}
+function refUndoGoal(){
+  const last = goalLog.pop();
+  if(!last) return;
+  if(last==='red' && redScore>0){ redScore--; document.getElementById('redscore').textContent = String(redScore).padStart(2,'0'); }
+  if(last==='blue' && blueScore>0){ blueScore--; document.getElementById('bluescore').textContent = String(blueScore).padStart(2,'0'); }
+  refSyncDisplay();
+}
+function refAdjustTimer(delta){
+  matchSeconds = Math.max(0, matchSeconds + delta);
+  refSyncDisplay();
+}
+function refEndMatch(){
+  matchRunning = false; matchHasEnded = true;
+  clearInterval(refTimerInterval);
+  const winner = redScore>blueScore ? 'red' : (blueScore>redScore ? 'blue' : 'draw');
+  document.getElementById('statelabel').textContent = 'Match ended';
+  document.getElementById('matchstate').textContent = winner==='draw' ? ('Match drawn '+redScore+' – '+blueScore)
+    : ((winner==='red'?'Red wins ':'Blue wins ')+redScore+' – '+blueScore);
+  document.getElementById('matchstate').classList.remove('live');
+  document.getElementById('statedot').classList.remove('live');
+  refSetStateLine('Match ended');
+  recordMatchResult(winner);
+}
+
+/* power-ups: red/blue each have their own Kicker + EMP with independent cooldowns */
+const refPwCooldownTimers = {};
+function refTriggerPower(pwId, cooldownSec){
+  const el = document.getElementById(pwId);
+  const btn = document.getElementById('btn'+pwId.charAt(0).toUpperCase()+pwId.slice(1).replace('kicker','Kicker').replace('emp','Emp'));
+  if(!el || !el.classList.contains('ready')) return;
+  const label = pwId.includes('kicker') ? 'Kicker' : 'EMP';
+  el.classList.remove('ready');
+  el.textContent = label+' · Cooldown';
+  if(pwId==='redkicker') triggerTruckKick('red');
+  if(pwId==='bluekicker') triggerTruckKick('blue');
+  const btnEl = document.querySelector(`[onclick*="refTriggerPower('${pwId}'"]`);
+  if(btnEl) btnEl.disabled = true;
+  clearTimeout(refPwCooldownTimers[pwId]);
+  refPwCooldownTimers[pwId] = setTimeout(()=>{
+    el.classList.add('ready');
+    el.textContent = label+' · Ready';
+    if(btnEl) btnEl.disabled = false;
+  }, cooldownSec*1000);
+}
+function refResetPowerups(){
+  ['redkicker','redemp','bluekicker','blueemp'].forEach(pwId=>{
+    clearTimeout(refPwCooldownTimers[pwId]);
+    const el = document.getElementById(pwId);
+    if(!el) return;
+    const label = pwId.includes('kicker') ? 'Kicker' : 'EMP';
+    el.classList.add('ready');
+    el.textContent = label+' · Ready';
+    const btnEl = document.querySelector(`[onclick*="refTriggerPower('${pwId}'"]`);
+    if(btnEl) btnEl.disabled = false;
+  });
+}
+
+/* ===== PLAYERS: roster, availability, matchmaking (in-memory demo) ===== */
+let players = [
+  {id:1, name:'Satyajeet', team:'red',  controller:'Controller 1 · Red',  matches:12, wins:8, available:true},
+  {id:2, name:'Arjun',     team:'blue', controller:'Controller 2 · Blue', matches:10, wins:5, available:true},
+  {id:3, name:'Rohan',     team:'bench',controller:'—',                  matches:4,  wins:1, available:true},
+  {id:4, name:'Kabir',     team:'bench',controller:'—',                  matches:6,  wins:4, available:false},
+];
+let playerIdCounter = 5;
+
+let matchQueue = [
+  {id:1, redId:3, blueId:4, issue:null},
+];
+let queueIdCounter = 2;
+
+let currentMatch = {redId:1, blueId:2};
+
+let matchHistory = [
+  {matchNum:27, date:'Aug 25, 9:40 PM', redName:'Satyajeet', blueName:'Arjun', redScore:5, blueScore:3, winner:'red'},
+  {matchNum:26, date:'Aug 25, 9:10 PM', redName:'Rohan',     blueName:'Kabir', redScore:1, blueScore:4, winner:'blue'},
+];
+let matchCounter = 28;
+
+function renderPlayers(){
+  const tbody = document.getElementById('playersBody');
+  if(!tbody) return;
+  tbody.innerHTML = players.map(p=>`
+    <tr>
+      <td>${p.name}</td>
+      <td><span class="team-badge ${p.team}">${p.team==='bench' ? 'Bench' : p.team}</span></td>
+      <td>${p.controller}</td>
+      <td>${p.matches}</td>
+      <td>${p.wins}</td>
+      <td>
+        <div class="switch status-switch ${p.available?'on':''}" onclick="togglePlayerAvailable(${p.id})" title="${p.available?'Available':'Unavailable'}"><div class="knob"></div></div>
+      </td>
+      <td><button class="icon-btn" onclick="removePlayer(${p.id})">✕ Remove</button></td>
+    </tr>`).join('');
+  renderPlayerSelects();
+  renderCurrentMatchBanner();
+}
+
+function togglePlayerAvailable(id){
+  const p = players.find(p=>p.id===id);
+  if(p) p.available = !p.available;
+  renderPlayers();
+  renderQueue();
+}
+
+function addPlayer(){
+  const nameEl = document.getElementById('newPlayerName');
+  const teamEl = document.getElementById('newPlayerTeam');
+  const ctrlEl = document.getElementById('newPlayerController');
+  const availEl = document.getElementById('newPlayerAvailable');
+  const name = nameEl.value.trim();
+  if(!name){ nameEl.focus(); return; }
+  players.push({id:playerIdCounter++, name, team:teamEl.value, controller:ctrlEl.value, matches:0, wins:0,
+    available: availEl.classList.contains('on')});
+  nameEl.value = '';
+  renderPlayers();
+}
+
+function removePlayer(id){
+  players = players.filter(p=>p.id!==id);
+  matchQueue.forEach(q=>{
+    if(q.redId===id) q.issue='red';
+    if(q.blueId===id) q.issue='blue';
+  });
+  renderPlayers();
+  renderQueue();
+}
+
+/* ---- next-match setup: only available players show up here ---- */
+function renderPlayerSelects(){
+  const redSel = document.getElementById('matchRedPlayer');
+  const blueSel = document.getElementById('matchBluePlayer');
+  if(!redSel || !blueSel) return;
+  const prevRed = redSel.value, prevBlue = blueSel.value;
+  const avail = players.filter(p=>p.available);
+  const opts = avail.map(p=>`<option value="${p.id}">${p.name}${p.team!=='bench' ? ' · '+p.team : ''}</option>`).join('');
+  redSel.innerHTML = opts; blueSel.innerHTML = opts;
+  if(avail.some(p=>String(p.id)===prevRed)) redSel.value = prevRed;
+  if(avail.some(p=>String(p.id)===prevBlue)) blueSel.value = prevBlue;
+  document.getElementById('setupWarning').style.display = avail.length<2 ? 'block' : 'none';
+}
+
+function renderCurrentMatchBanner(){
+  const redEl = document.getElementById('currentRedName');
+  const blueEl = document.getElementById('currentBlueName');
+  if(!redEl || !blueEl) return;
+  const redP = players.find(p=>p.id===currentMatch.redId);
+  const blueP = players.find(p=>p.id===currentMatch.blueId);
+  redEl.textContent = redP ? redP.name : '—';
+  blueEl.textContent = blueP ? blueP.name : '—';
+}
+
+function applyMatch(redId, blueId){
+  currentMatch = {redId, blueId};
+  const redP = players.find(p=>p.id===redId);
+  const blueP = players.find(p=>p.id===blueId);
+  document.querySelector('.truckside.red .pname').textContent = redP ? redP.name : 'Red';
+  document.querySelector('.truckside.blue .pname').textContent = blueP ? blueP.name : 'Blue';
+  redScore = 0; blueScore = 0;
+  document.getElementById('redscore').textContent = '00';
+  document.getElementById('bluescore').textContent = '00';
+  renderCurrentMatchBanner();
+  showScreen('live', document.getElementById('navLiveBtn'));
+  setState('ready', document.getElementById('toolbarReadyBtn'));
+}
+
+function startMatchNow(){
+  const redSel = document.getElementById('matchRedPlayer');
+  const blueSel = document.getElementById('matchBluePlayer');
+  const errEl = document.getElementById('setupError');
+  if(!redSel.value || !blueSel.value){ return; }
+  if(redSel.value === blueSel.value){
+    errEl.textContent = '⚠ Red aur Blue ke liye alag-alag player choose karo.';
+    errEl.style.display = 'block';
+    return;
+  }
+  errEl.style.display = 'none';
+  applyMatch(Number(redSel.value), Number(blueSel.value));
+}
+
+/* ---- match queue: plan next matches, swap in a substitute if someone is unavailable ---- */
+function addToQueue(){
+  const redSel = document.getElementById('matchRedPlayer');
+  const blueSel = document.getElementById('matchBluePlayer');
+  if(!redSel.value || !blueSel.value || redSel.value===blueSel.value) return;
+  matchQueue.push({id:queueIdCounter++, redId:Number(redSel.value), blueId:Number(blueSel.value), issue:null});
+  renderQueue();
+}
+
+function renderQueue(){
+  const box = document.getElementById('queueList');
+  const empty = document.getElementById('queueEmpty');
+  if(!box) return;
+  if(matchQueue.length===0){ box.innerHTML=''; empty.style.display='block'; return; }
+  empty.style.display='none';
+  box.innerHTML = matchQueue.map(q=>{
+    const redP = players.find(p=>p.id===q.redId);
+    const blueP = players.find(p=>p.id===q.blueId);
+    let issue = null;
+    if(!redP || !redP.available) issue = 'red';
+    else if(!blueP || !blueP.available) issue = 'blue';
+    q.issue = issue;
+    const subOptions = players.filter(p=>p.available && p.id!==q.redId && p.id!==q.blueId)
+      .map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
+    return `
+    <div class="queue-row">
+      <div class="queue-names">
+        <span class="r">${redP ? redP.name : 'Removed player'}</span>
+        <span class="vs"> vs </span>
+        <span class="b">${blueP ? blueP.name : 'Removed player'}</span>
+      </div>
+      <div class="queue-actions">
+        <button class="btn small" onclick="startQueueMatch(${q.id})">▶ Start</button>
+        <button class="icon-btn" onclick="removeFromQueue(${q.id})">✕ Remove</button>
+      </div>
+      ${issue ? `
+      <div class="queue-warn">
+        ⚠ ${issue==='red' ? (redP?redP.name:'Red player') : (blueP?blueP.name:'Blue player')} is not available right now — pick a replacement:
+        <select id="sub-${q.id}">${subOptions || '<option value="">No one else available</option>'}</select>
+        <button class="btn small" onclick="reassignQueueSlot(${q.id},'${issue}')">Confirm swap</button>
+      </div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function removeFromQueue(id){
+  matchQueue = matchQueue.filter(q=>q.id!==id);
+  renderQueue();
+}
+
+function reassignQueueSlot(qid, side){
+  const item = matchQueue.find(q=>q.id===qid);
+  const subSel = document.getElementById('sub-'+qid);
+  if(!item || !subSel || !subSel.value) return;
+  if(side==='red') item.redId = Number(subSel.value); else item.blueId = Number(subSel.value);
+  item.issue = null;
+  renderQueue();
+}
+
+function startQueueMatch(qid){
+  const item = matchQueue.find(q=>q.id===qid);
+  if(!item) return;
+  const redP = players.find(p=>p.id===item.redId);
+  const blueP = players.find(p=>p.id===item.blueId);
+  if(!redP || !redP.available || !blueP || !blueP.available){ renderQueue(); return; }
+  applyMatch(item.redId, item.blueId);
+  matchQueue = matchQueue.filter(q=>q.id!==qid);
+  renderQueue();
+}
+
+/* ---- history + auto stat tracking, tied to the referee "Match ended" state ---- */
+function recordMatchResult(winner){
+  const redP = players.find(p=>p.id===currentMatch.redId);
+  const blueP = players.find(p=>p.id===currentMatch.blueId);
+  if(redP){ redP.matches++; if(winner==='red') redP.wins++; }
+  if(blueP){ blueP.matches++; if(winner==='blue') blueP.wins++; }
+  matchHistory.unshift({
+    matchNum: matchCounter++, date:'Just now',
+    redName: redP ? redP.name : 'Red', blueName: blueP ? blueP.name : 'Blue',
+    redScore, blueScore, winner
+  });
+  renderPlayers();
+  renderHistory();
+}
+
+function renderHistory(){
+  const box = document.getElementById('historyList');
+  if(!box) return;
+  box.innerHTML = matchHistory.map(m=>`
+    <div class="match-card">
+      <div class="side red"><div class="tn">Red</div><div>${m.redName}</div><div class="sc">${String(m.redScore).padStart(2,'0')}</div></div>
+      <div class="mid">Match #${m.matchNum}<br>${m.date}<br>
+        <span class="winner">${m.winner==='draw' ? 'Draw' : 'Winner: '+(m.winner==='red'?'Red':'Blue')}</span></div>
+      <div class="side blue"><div class="tn">Blue</div><div>${m.blueName}</div><div class="sc">${String(m.blueScore).padStart(2,'0')}</div></div>
+    </div>`).join('');
+}
+
+/* ===== SETTINGS: toggles + save ===== */
+function toggleSwitch(el){ el.classList.toggle('on'); }
+
+function saveSettings(){
+  const msg = document.getElementById('settingsSavedMsg');
+  msg.classList.add('show');
+  setTimeout(()=>msg.classList.remove('show'), 2000);
+}
+
+renderPlayers();
+renderQueue();
+renderHistory();
+refSyncDisplay();
+</script>
+
+<script>
+(function(){
+  const clock = document.getElementById('uiClock');
+  function tick(){
+    if(!clock) return;
+    const d = new Date();
+    clock.textContent = d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  }
+  tick(); setInterval(tick,1000);
+
+  // Visual connection indicator for this standalone UI.
+  // When the real WebSocket/backend is integrated, these two values can be
+  // updated from the server state without changing the visual layer.
+  window.setArenaDevices = function(online,total){
+    const el = document.getElementById('deviceCount');
+    if(el) el.textContent = online + '/' + total + ' devices';
+  };
+  window.setArenaConnection = function(online){
+    const el = document.getElementById('arenaConnection');
+    if(!el) return;
+    el.textContent = online ? '● Arena online' : '● Arena offline';
+    el.style.color = online ? 'var(--green)' : 'var(--red)';
+  };
+})();
+</script>
+
+<!-- ESPNET_BACKEND_BRIDGE_START -->
+<script>
+(function () {
+    "use strict";
+
+    console.log("[ESPNet] Backend bridge loading...");
+
+    let backendDevices = [];
+    let backendPlayers = [];
+    let backendMatch = null;
+    let backendHistory = [];
+
+    async function api(url, method, body) {
+        const options = {
+            method: method || "GET",
+            headers: {}
+        };
+
+        if (body !== undefined) {
+            options.headers["Content-Type"] = "application/json";
+            options.body = JSON.stringify(body);
+        }
+
+        const response = await fetch(url, options);
+        const text = await response.text();
+
+        let data = null;
+
+        try {
+            data = text ? JSON.parse(text) : null;
+        } catch (_) {}
+
+        if (!response.ok) {
+            throw new Error(
+                data && data.error
+                    ? data.error
+                    : "HTTP " + response.status
+            );
+        }
+
+        return data;
+    }
+
+    function esc(value) {
+        return String(value == null ? "" : value)
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;")
+            .replaceAll("'", "&#039;");
+    }
+
+    function formatClock(ms) {
+        const total = Math.max(
+            0,
+            Math.floor(Number(ms || 0) / 1000)
+        );
+
+        const minutes = Math.floor(total / 60);
+        const seconds = total % 60;
+
+        return (
+            String(minutes).padStart(2, "0") +
+            ":" +
+            String(seconds).padStart(2, "0")
+        );
+    }
+
+    function updateConnection() {
+        const conn = document.querySelector(".conn");
+
+        if (!conn) return;
+
+        const online = backendDevices.filter(
+            d => d && d.isOnline
+        ).length;
+
+        const total = backendDevices.length;
+
+        conn.innerHTML =
+            '<span id="arenaConnection">● Arena ' +
+            (online > 0 ? "online" : "offline") +
+            "</span>" +
+            '<span id="deviceCount">' +
+            online +
+            "/" +
+            total +
+            " devices</span>";
+    }
+
+    function updateMatch() {
+        if (!backendMatch) return;
+
+        const red =
+            Number(backendMatch.scoreRed || 0);
+
+        const blue =
+            Number(backendMatch.scoreBlue || 0);
+
+        const timer =
+            document.getElementById("timer");
+
+        if (timer) {
+            timer.textContent =
+                formatClock(
+                    backendMatch.timeRemainingMs
+                );
+        }
+
+        const redScore =
+            document.getElementById("redscore");
+
+        const blueScore =
+            document.getElementById("bluescore");
+
+        if (redScore) {
+            redScore.textContent = red;
+        }
+
+        if (blueScore) {
+            blueScore.textContent = blue;
+        }
+
+        const stateLabel =
+            document.getElementById("statelabel");
+
+        if (stateLabel) {
+
+            if (
+                backendMatch.matchActive &&
+                !backendMatch.isPaused
+            ) {
+                stateLabel.textContent =
+                    "Match live";
+            }
+            else if (
+                backendMatch.matchActive &&
+                backendMatch.isPaused
+            ) {
+                stateLabel.textContent =
+                    "Match paused";
+            }
+            else {
+                stateLabel.textContent =
+                    "Match ready";
+            }
+        }
+
+        const refClock =
+            document.getElementById("refClockLine");
+
+        if (refClock) {
+            refClock.textContent =
+                formatClock(
+                    backendMatch.timeRemainingMs
+                );
+        }
+
+        const refState =
+            document.getElementById("refStateLine");
+
+        if (refState) {
+
+            if (
+                backendMatch.matchActive &&
+                !backendMatch.isPaused
+            ) {
+                refState.textContent =
+                    "Match live";
+            }
+            else if (
+                backendMatch.matchActive &&
+                backendMatch.isPaused
+            ) {
+                refState.textContent =
+                    "Match paused";
+            }
+            else {
+                refState.textContent =
+                    "Match ready";
+            }
+        }
+    }
+
+    /* ========================================================
+       REFEREE
+       ======================================================== */
+
+    window.refStart = async function () {
+
+        try {
+            await api(
+                "/api/match/start",
+                "POST",
+                {}
+            );
+
+            await refreshAll();
+
+        } catch (error) {
+
+            console.error(
+                "[ESPNet] Start failed:",
+                error
+            );
+
+            alert(
+                "Start failed: " +
+                error.message
+            );
+        }
+    };
+
+    window.refPause = async function () {
+
+        try {
+
+            await api(
+                "/api/match/pause",
+                "POST"
+            );
+
+            await refreshAll();
+
+        } catch (error) {
+
+            console.error(
+                "[ESPNet] Pause failed:",
+                error
+            );
+        }
+    };
+
+    window.refResume = async function () {
+
+        try {
+
+            await api(
+                "/api/match/resume",
+                "POST"
+            );
+
+            await refreshAll();
+
+        } catch (error) {
+
+            console.error(
+                "[ESPNet] Resume failed:",
+                error
+            );
+        }
+    };
+
+    window.refReset = async function () {
+
+        if (
+            !confirm(
+                "Reset match? This clears the score and timer."
+            )
+        ) {
+            return;
+        }
+
+        try {
+
+            await api(
+                "/api/match/reset",
+                "POST"
+            );
+
+            await refreshAll();
+
+        } catch (error) {
+
+            console.error(
+                "[ESPNet] Reset failed:",
+                error
+            );
+        }
+    };
+
+    window.refGoal = async function (team) {
+
+    if (
+        team !== "red" &&
+        team !== "blue"
+    ) {
+        return;
+    }
+
+    try {
+
+        // ==========================================
+        // BACKEND GOAL
+        // ==========================================
+
+        await api(
+            "/api/match/goal",
+            "POST",
+            {
+                team: team
+            }
+        );
+
+        // ==========================================
+        // UPDATE BACKEND STATE
+        // ==========================================
+
+        await refreshAll();
+
+        // ==========================================
+        // GOAL ANIMATION
+        // ==========================================
+
+        const arena =
+            document.getElementById("arena");
+
+        if (arena) {
+
+            arena.classList.remove(
+                "goal",
+                "goal-red",
+                "goal-blue"
+            );
+
+            /*
+             * Force browser reflow.
+             * Isse animation har goal par
+             * dobara start hogi.
+             */
+
+            void arena.offsetWidth;
+
+            arena.classList.add("goal");
+
+            if (team === "red") {
+                arena.classList.add("goal-red");
+            }
+            else {
+                arena.classList.add("goal-blue");
+            }
+
+            setTimeout(
+                function () {
+
+                    arena.classList.remove(
+                        "goal",
+                        "goal-red",
+                        "goal-blue"
+                    );
+
+                },
+                1600
+            );
+        }
+
+        // ==========================================
+        // GOAL TEXT
+        // ==========================================
+
+        const goalText =
+            document.getElementById("goaltext");
+
+        if (goalText) {
+
+            goalText.textContent =
+                team === "red"
+                    ? "RED SCORES!"
+                    : "BLUE SCORES!";
+
+            goalText.style.display = "block";
+
+            setTimeout(
+                function () {
+
+                    goalText.style.display = "";
+
+                },
+                1600
+            );
+        }
+
+    }
+    catch (error) {
+
+        console.error(
+            "[ESPNet] Goal failed:",
+            error
+        );
+
+        alert(
+            "Goal failed: " +
+            error.message
+        );
+    }
+};
+
+    window.refUndoGoal = async function () {
+
+        try {
+
+            await api(
+                "/api/match/undo",
+                "POST"
+            );
+
+            await refreshAll();
+
+        } catch (error) {
+
+            console.error(
+                "[ESPNet] Undo failed:",
+                error
+            );
+        }
+    };
+
+    window.refAdjustTimer =
+        async function (deltaSeconds) {
+
+            try {
+
+                await api(
+                    "/api/match/time",
+                    "POST",
+                    {
+                        deltaMs:
+                            Number(deltaSeconds) *
+                            1000
+                    }
+                );
+
+                await refreshAll();
+
+            } catch (error) {
+
+                console.error(
+                    "[ESPNet] Timer adjustment failed:",
+                    error
+                );
+            }
+        };
+
+    /* ========================================================
+       PLAYERS
+       ======================================================== */
+
+    async function loadPlayers() {
+
+        try {
+
+            const data =
+                await api("/api/players");
+
+            backendPlayers =
+                Array.isArray(data.players)
+                    ? data.players
+                    : [];
+
+            renderPlayers();
+
+        } catch (error) {
+
+            console.error(
+                "[ESPNet] Players failed:",
+                error
+            );
+        }
+    }
+
+    function renderPlayers() {
+
+        const tbody =
+            document.getElementById(
+                "playersBody"
+            );
+
+        if (!tbody) return;
+
+        if (!backendPlayers.length) {
+
+            tbody.innerHTML =
+                '<tr>' +
+                    '<td colspan="7" style="text-align:center">' +
+                        "No players registered" +
+                    "</td>" +
+                "</tr>";
+
+            return;
+        }
+
+        tbody.innerHTML =
+            backendPlayers.map(
+                player => {
+
+                    return (
+                        "<tr>" +
+
+                        "<td>" +
+                        esc(player.name) +
+                        "</td>" +
+
+                        "<td>" +
+                        esc(
+                            player.team ||
+                            "—"
+                        ) +
+                        "</td>" +
+
+                        "<td>" +
+                        esc(
+                            player.controllerMac ||
+                            "—"
+                        ) +
+                        "</td>" +
+
+                        "<td>" +
+                        Number(
+                            player.matches || 0
+                        ) +
+                        "</td>" +
+
+                        "<td>" +
+                        Number(
+                            player.wins || 0
+                        ) +
+                        "</td>" +
+
+                        "<td>" +
+                        (
+                            player.available
+                                ? "Available"
+                                : "Unavailable"
+                        ) +
+                        "</td>" +
+
+                        "<td>" +
+                        '<button onclick="window.backendRemovePlayer(\'' +
+                        esc(player.id) +
+                        "')\">" +
+                        "Remove" +
+                        "</button>" +
+                        "</td>" +
+
+                        "</tr>"
+                    );
+                }
+            ).join("");
+    }
+
+    window.backendRemovePlayer =
+        async function (id) {
+
+            try {
+
+                await api(
+                    "/api/players/" +
+                    encodeURIComponent(id),
+                    "DELETE"
+                );
+
+                await loadPlayers();
+
+            } catch (error) {
+
+                console.error(
+                    "[ESPNet] Player delete failed:",
+                    error
+                );
+            }
+        };
+
+    window.addPlayer = async function () {
+
+        const nameEl =
+            document.getElementById(
+                "newPlayerName"
+            );
+
+        const teamEl =
+            document.getElementById(
+                "newPlayerTeam"
+            );
+
+        if (
+            !nameEl ||
+            !nameEl.value.trim()
+        ) {
+            return;
+        }
+
+        try {
+
+            await api(
+                "/api/players",
+                "POST",
+                {
+                    name:
+                        nameEl.value.trim(),
+
+                    team:
+                        teamEl &&
+                        (
+                            teamEl.value ===
+                            "red" ||
+                            teamEl.value ===
+                            "blue"
+                        )
+                            ? teamEl.value
+                            : null
+                }
+            );
+
+            nameEl.value = "";
+
+            await loadPlayers();
+
+        } catch (error) {
+
+            console.error(
+                "[ESPNet] Player add failed:",
+                error
+            );
+
+            alert(
+                "Player add failed: " +
+                error.message
+            );
+        }
+    };
+
+    /* ========================================================
+       MATCH STATE
+       ======================================================== */
+
+    async function loadMatch() {
+
+        try {
+
+            const data =
+                await api(
+                    "/api/match/state"
+                );
+
+            backendMatch =
+                data.match || null;
+
+            updateMatch();
+
+        } catch (error) {
+
+            console.error(
+                "[ESPNet] Match state failed:",
+                error
+            );
+        }
+    }
+
+    /* ========================================================
+       DEVICES
+       ======================================================== */
+
+    async function loadDevices() {
+
+        try {
+
+            const data =
+                await api(
+                    "/api/devices"
+                );
+
+            backendDevices =
+                Array.isArray(data.devices)
+                    ? data.devices
+                    : [];
+
+            updateConnection();
+
+        } catch (error) {
+
+            console.error(
+                "[ESPNet] Devices failed:",
+                error
+            );
+
+            backendDevices = [];
+
+            updateConnection();
+        }
+    }
+
+    /* ========================================================
+       HISTORY
+       ======================================================== */
+
+    async function loadHistory() {
+
+        try {
+
+            const data =
+                await api(
+                    "/api/match/history"
+                );
+
+            backendHistory =
+                Array.isArray(data.entries)
+                    ? data.entries
+                    : [];
+
+        } catch (error) {
+
+            console.error(
+                "[ESPNet] History failed:",
+                error
+            );
+        }
+    }
+
+    /* ========================================================
+       REFRESH
+       ======================================================== */
+
+    async function refreshAll() {
+
+        await Promise.all([
+            loadDevices(),
+            loadPlayers(),
+            loadMatch(),
+            loadHistory()
+        ]);
+    }
+
+    /* ========================================================
+       INITIALIZE
+       ======================================================== */
+
+    refreshAll();
+
+    /*
+     * Backend state polling.
+     * This keeps UI synchronized even without WebSocket.
+     */
+    setInterval(
+        loadMatch,
+        1000
+    );
+
+    setInterval(
+        loadDevices,
+        3000
+    );
+
+    console.log(
+        "[ESPNet] Backend bridge ready."
+    );
+
+})();
+</script>
+<!-- ESPNET_BACKEND_BRIDGE_END -->
+</body>
+</html>
